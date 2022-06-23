@@ -1,0 +1,23 @@
+DROP TABLE IF EXISTS mod_contratti_collaboratori;
+CREATE TABLE IF NOT EXISTS mod_contratti_collaboratori (
+ `id` int(10) NOT NULL auto_increment,
+ `nome` varchar(50) NOT NULL COMMENT 'Nome Contratto',
+ `fk_anagrafica` int(10) NOT NULL COMMENT 'Collaboratore',
+ `mansione` varchar(255) NOT NULL COMMENT 'Mansione',
+ `data_da` date NOT NULL COMMENT 'Data da',
+ `data_a` date NOT NULL COMMENT 'Data a',
+ `importo_mensile` float(9,2) NOT NULL COMMENT 'Importo Mensile',
+ `tipo_pagamento` enum(8) NOT NULL COMMENT 'Tipo Pagamento',
+ `banca` varchar(255) NULL COMMENT 'Banca',
+ `iban` varchar(255) NULL COMMENT 'IBAN',
+PRIMARY KEY (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;	
+			
+DELETE FROM core_module_list WHERE mod_name = 'mod_contratti_collaboratori';
+			
+DELETE FROM core_roles_permission WHERE mod_name = 'mod_contratti_collaboratori';
+			
+INSERT INTO core_module_list(mod_id,mod_name, class_name, mod_type, mod_title, mod_icon,mod_parentid, active, is_deletable,is_moveable,position,admin_perm_only)
+				VALUES(931,'mod_contratti_collaboratori','mod_contratti_collaboratori','mod_gen','Contratti Collaboratori','fa fa fa-cubes',17,'Y','Y','Y',361,'N');
+INSERT INTO core_roles_permission(role_id,mod_id,mod_name,perm_read,perm_write,perm_update,perm_delete)
+					VALUES(1,931,'mod_contratti_collaboratori','Y','Y','Y','Y')

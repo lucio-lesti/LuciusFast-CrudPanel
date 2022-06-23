@@ -1,0 +1,27 @@
+DROP TABLE IF EXISTS mod_anagrafica_pagamenti_v;
+CREATE TABLE IF NOT EXISTS mod_anagrafica_pagamenti_v (
+ `id` int(10) NOT NULL,
+ `anagrafica_id` int(10) NOT NULL,
+ `anagrafica` varchar(120) NULL,
+ `affiliazione_id` varchar(50) NOT NULL COMMENT 'Nome Affiliazione',
+ `affiliazione` varchar(50) NOT NULL COMMENT 'Nome Affiliazione',
+ `esercizio_id` int(10) NOT NULL,
+ `esercizio` varchar(100) NOT NULL COMMENT 'Nome',
+ `saldo` enum(11) NULL COMMENT 'Saldo',
+ `datapagamento` date NULL COMMENT 'Data Pagamento',
+ `mese` enum(9) NULL COMMENT 'Mese',
+ `anno` enum(4) NULL COMMENT 'Anno',
+ `importo` float(10,2) NULL COMMENT 'Pagato',
+PRIMARY KEY ()
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;	
+			
+DELETE FROM core_module_list WHERE mod_name = 'mod_anagrafica_pagamenti_v';
+			
+DELETE FROM core_roles_permission WHERE mod_name = 'mod_anagrafica_pagamenti_v';
+			
+INSERT INTO core_module_list(mod_id,mod_name, class_name, mod_type, mod_title, mod_icon,mod_parentid, active, is_deletable,is_moveable,position,admin_perm_only)
+				VALUES(1022,'mod_anagrafica_pagamenti_v','mod_anagrafica_pagamenti_v','mod_gen','Pagamenti Ricevuti','fa fa fa-thin fa-money-bill-1-wave',17,'Y','Y','Y',449,'N');
+INSERT INTO core_roles_permission(role_id,mod_id,mod_name,perm_read,perm_write,perm_update,perm_delete)
+					VALUES(1,1022,'mod_anagrafica_pagamenti_v','Y','Y','Y','Y')
+
+

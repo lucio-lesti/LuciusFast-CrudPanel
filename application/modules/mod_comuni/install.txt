@@ -1,0 +1,21 @@
+DROP TABLE IF EXISTS mod_comuni;
+CREATE TABLE IF NOT EXISTS mod_comuni (
+ `abitanti` int(10) NULL COMMENT 'Nr. Abitanti',
+ `cap` varchar(10) NOT NULL COMMENT 'CAP',
+ `codfisco` varchar(10) NULL COMMENT 'CodFisc',
+ `codice_provincia` varchar(3) NOT NULL COMMENT 'Prov.',
+ `codice_regione` varchar(3) NOT NULL COMMENT 'Regione',
+ `comune` varchar(100) NOT NULL COMMENT 'Comune',
+ `istat` int(10) NOT NULL COMMENT 'Istat' auto_increment,
+ `prefisso` varchar(10) NOT NULL COMMENT 'Prefisso',
+PRIMARY KEY (`istat`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;	
+			
+DELETE FROM core_module_list WHERE mod_name = 'mod_comuni';
+			
+DELETE FROM core_roles_permission WHERE mod_name = 'mod_comuni';
+			
+INSERT INTO core_module_list(mod_id,mod_name, class_name, mod_type, mod_title, mod_icon,mod_parentid, active, is_deletable,is_moveable,position,admin_perm_only)
+				VALUES(859,'mod_comuni','mod_comuni','mod_gen','Comuni','fa fa fa-cubes',16,'Y','Y','Y',290,'N');
+INSERT INTO core_roles_permission(role_id,mod_id,mod_name,perm_read,perm_write,perm_update,perm_delete)
+					VALUES(1,859,'mod_comuni','Y','Y','Y','Y')

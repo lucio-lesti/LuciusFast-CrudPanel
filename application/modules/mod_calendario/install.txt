@@ -1,0 +1,9 @@
+ 
+DELETE FROM core_module_list WHERE mod_name = 'mod_calendario';
+			
+DELETE FROM core_roles_permission WHERE mod_name = 'mod_calendario';
+			
+INSERT INTO core_module_list(mod_id,mod_name, class_name, mod_type, mod_title, mod_icon,mod_parentid, active, is_deletable,is_moveable,position,admin_perm_only)
+				VALUES(1020,'mod_calendario','mod_calendario','mod_gen','Calendario','fa fa fa-calendar',821,'Y','Y','Y',447,'N');
+INSERT INTO core_roles_permission(role_id,mod_id,mod_name,perm_read,perm_write,perm_update,perm_delete)
+					VALUES(1,1020,'mod_calendario','Y','Y','Y','Y');
