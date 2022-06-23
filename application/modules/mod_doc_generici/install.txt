@@ -1,0 +1,18 @@
+DROP TABLE IF EXISTS mod_doc_generici;
+CREATE TABLE IF NOT EXISTS mod_doc_generici (
+ `data` date NULL,
+ `descrizione` text(65535) NULL,
+ `id` int(10) NOT NULL auto_increment,
+ `nome` varchar(100) NULL,
+ `tipo_doc` enum(20) NULL,
+PRIMARY KEY (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;	
+			
+DELETE FROM core_module_list WHERE mod_name = 'mod_doc_generici';
+			
+DELETE FROM core_roles_permission WHERE mod_name = 'mod_doc_generici';
+			
+INSERT INTO core_module_list(mod_id,mod_name, class_name, mod_type, mod_title, mod_icon,mod_parentid, active, is_deletable,is_moveable,position,admin_perm_only)
+				VALUES(771,'mod_doc_generici','mod_doc_generici','mod_gen','Documenti Generici','fa fa fa-cubes',17,'Y','Y','Y',203,'N');
+INSERT INTO core_roles_permission(role_id,mod_id,mod_name,perm_read,perm_write,perm_update,perm_delete)
+					VALUES(1,771,'mod_doc_generici','Y','Y','Y','Y')
