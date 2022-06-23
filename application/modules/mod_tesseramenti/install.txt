@@ -1,0 +1,21 @@
+DROP TABLE IF EXISTS mod_tesseramenti;
+CREATE TABLE IF NOT EXISTS mod_tesseramenti (
+ `data_tesseramento` date NOT NULL COMMENT 'Data Tesseramento',
+ `fk_affiliazione` int(10) NOT NULL COMMENT 'Affiliazione',
+ `fk_anagrafica` int(10) NOT NULL COMMENT 'Anagrafica',
+ `fk_esercizio` int(10) NOT NULL COMMENT 'Esercizio',
+ `fk_tessera` int(10) NOT NULL COMMENT 'Tessera',
+ `id` int(10) NOT NULL auto_increment,
+ `importo` float(9,2) NOT NULL COMMENT 'Importo',
+ `modo_pagamento` enum(8) NOT NULL COMMENT 'Modalita Pagamento',
+PRIMARY KEY (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;	
+			
+DELETE FROM core_module_list WHERE mod_name = 'mod_tesseramenti';
+			
+DELETE FROM core_roles_permission WHERE mod_name = 'mod_tesseramenti';
+			
+INSERT INTO core_module_list(mod_id,mod_name, class_name, mod_type, mod_title, mod_icon,mod_parentid, active, is_deletable,is_moveable,position,admin_perm_only)
+				VALUES(938,'mod_tesseramenti','mod_tesseramenti','mod_gen','Tesseramenti','fa fa fa-cubes',821,'Y','Y','Y',366,'N');
+INSERT INTO core_roles_permission(role_id,mod_id,mod_name,perm_read,perm_write,perm_update,perm_delete)
+					VALUES(1,938,'mod_tesseramenti','Y','Y','Y','Y')

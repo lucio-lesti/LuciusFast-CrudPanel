@@ -1,0 +1,6 @@
+
+	
+INSERT INTO core_module_list(mod_id,mod_name, class_name, mod_type, mod_title, mod_icon,mod_parentid, active, is_deletable,is_moveable,position)
+		VALUES(175,'mod_stampe','mod_stampe','mod_gen','Stampe','fa fa-print',16,'Y','Y','Y',53);
+INSERT INTO core_roles_permission(role_id,mod_id,mod_name,perm_read,perm_write,perm_update,perm_delete)
+			VALUES(1,175,'mod_anagrafica','Y','Y','Y','Y')
