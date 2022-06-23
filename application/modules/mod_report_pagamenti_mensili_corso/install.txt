@@ -1,0 +1,29 @@
+DROP TABLE IF EXISTS mod_report_pagamenti_mensili_corso;
+CREATE TABLE IF NOT EXISTS mod_report_pagamenti_mensili_corso (
+ `Ago` varchar(10) NULL,
+ `Anagrafica` varchar(101) NULL,
+ `Apr` varchar(10) NULL,
+ `Data_Iscrizione` date NULL COMMENT 'Data Iscrizione',
+ `Dic` varchar(10) NULL,
+ `Feb` varchar(10) NULL,
+ `Gen` varchar(10) NULL,
+ `Giu` varchar(10) NULL,
+ `id` char NOT NULL,
+ `ids` char NOT NULL,
+ `Lug` varchar(10) NULL,
+ `Mag` varchar(10) NULL,
+ `Mar` varchar(10) NULL,
+ `Nov` varchar(10) NULL,
+ `Ott` varchar(10) NULL,
+ `Set` varchar(10) NULL,
+PRIMARY KEY ()
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;	
+			
+DELETE FROM core_module_list WHERE mod_name = 'mod_report_pagamenti_mensili_corso';
+			
+DELETE FROM core_roles_permission WHERE mod_name = 'mod_report_pagamenti_mensili_corso';
+			
+INSERT INTO core_module_list(mod_id,mod_name, class_name, mod_type, mod_title, mod_icon,mod_parentid, active, is_deletable,is_moveable,position,admin_perm_only)
+				VALUES(923,'mod_report_pagamenti_mensili_corso','mod_report_pagamenti_mensili_corso','mod_gen','Report Pagamenti Mensili','fa fa fa-cubes',821,'Y','Y','Y',353,'N');
+INSERT INTO core_roles_permission(role_id,mod_id,mod_name,perm_read,perm_write,perm_update,perm_delete)
+					VALUES(1,923,'mod_report_pagamenti_mensili_corso','Y','Y','Y','Y')

@@ -1,0 +1,15 @@
+DROP TABLE IF EXISTS mod_sport;
+CREATE TABLE IF NOT EXISTS mod_sport (
+ `id` int(10) NOT NULL auto_increment,
+ `sport` varchar(30) NOT NULL COMMENT 'Nome Sport',
+PRIMARY KEY (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;	
+			
+DELETE FROM core_module_list WHERE mod_name = 'mod_sport';
+			
+DELETE FROM core_roles_permission WHERE mod_name = 'mod_sport';
+			
+INSERT INTO core_module_list(mod_id,mod_name, class_name, mod_type, mod_title, mod_icon,mod_parentid, active, is_deletable,is_moveable,position,admin_perm_only)
+				VALUES(858,'mod_sport','mod_sport','mod_gen','Sports','fa fa fa-cubes',16,'Y','Y','Y',289,'N');
+INSERT INTO core_roles_permission(role_id,mod_id,mod_name,perm_read,perm_write,perm_update,perm_delete)
+					VALUES(1,858,'mod_sport','Y','Y','Y','Y')
