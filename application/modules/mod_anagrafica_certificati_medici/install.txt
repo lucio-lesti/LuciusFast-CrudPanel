@@ -1,0 +1,20 @@
+DROP TABLE IF EXISTS _mod_anagrafica_certificati_medici;
+CREATE TABLE IF NOT EXISTS _mod_anagrafica_certificati_medici (
+ `id` int(10) NOT NULL auto_increment,
+ `fk_anagrafica` int(10) NOT NULL COMMENT 'Anagrafica',
+ `tipologia` enum(14) NOT NULL COMMENT 'Tipologia Certificato',
+ `data_certificato` date NOT NULL COMMENT 'Data Certificato',
+ `data_scadenza` date NOT NULL COMMENT 'Data Scadenza Certificato',
+ `documento_upload` longblob(4294967295) NOT NULL COMMENT 'Documento Upload',
+ `nome_documento` varchar(255) NOT NULL COMMENT 'Nome Documento',
+PRIMARY KEY (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;	
+			
+DELETE FROM core_module_list WHERE mod_name = 'mod_anagrafica_certificati_medici';
+			
+DELETE FROM core_roles_permission WHERE mod_name = 'mod_anagrafica_certificati_medici';
+			
+INSERT INTO core_module_list(mod_id,mod_name, class_name, mod_type, mod_title, mod_icon,mod_parentid, active, is_deletable,is_moveable,position,admin_perm_only)
+				VALUES(1017,'mod_anagrafica_certificati_medici','mod_anagrafica_certificati_medici','mod_gen','Certificati Medici','fa fa fa-cubes',889,'Y','Y','Y',445,'N');
+INSERT INTO core_roles_permission(role_id,mod_id,mod_name,perm_read,perm_write,perm_update,perm_delete)
+					VALUES(1,1017,'mod_anagrafica_certificati_medici','Y','Y','Y','Y')

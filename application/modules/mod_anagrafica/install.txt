@@ -1,0 +1,32 @@
+DROP TABLE IF EXISTS mod_anagrafica;
+CREATE TABLE IF NOT EXISTS mod_anagrafica (
+ `anagrafica_attributo` set(41) NOT NULL COMMENT 'Attributo Anagrafica',
+ `cellulare` varchar(50) NULL COMMENT 'Cellulare',
+ `codfiscale` varchar(16) NOT NULL COMMENT 'Codice Fiscale',
+ `cognome` varchar(50) NOT NULL COMMENT 'Cognome',
+ `datanascita` date NOT NULL COMMENT 'Data di Nascita',
+ `doc_domanda_ammissione_socio` longblob(4294967295) NULL COMMENT 'Domanda Ammissione Socio',
+ `documento` longblob(4294967295) NULL COMMENT 'Carta identita',
+ `email` varchar(100) NULL COMMENT 'E-Mail',
+ `fk_comune_nascita` int(10) NOT NULL COMMENT 'Comune di Nascita',
+ `fk_comune_residenza` int(10) NOT NULL COMMENT 'Comune Residenza',
+ `fk_tutore` int(10) NULL COMMENT 'Tutore',
+ `id` int(10) NOT NULL auto_increment,
+ `img_foto` longblob(4294967295) NULL COMMENT 'Foto',
+ `indirizzo` varchar(100) NOT NULL COMMENT 'Indirizzo',
+ `nome` varchar(50) NOT NULL COMMENT 'Nome',
+ `notetesto` longtext(4294967295) NULL COMMENT 'Note',
+ `sesso` enum(1) NOT NULL COMMENT 'Sesso',
+ `sottoposto_regime_green_pass` enum(8) NOT NULL COMMENT 'Sottoposto a Regime di green pass',
+ `telefono` varchar(50) NULL COMMENT 'Telefono',
+PRIMARY KEY (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;	
+			
+DELETE FROM core_module_list WHERE mod_name = 'mod_anagrafica';
+			
+DELETE FROM core_roles_permission WHERE mod_name = 'mod_anagrafica';
+			
+INSERT INTO core_module_list(mod_id,mod_name, class_name, mod_type, mod_title, mod_icon,mod_parentid, active, is_deletable,is_moveable,position,admin_perm_only)
+				VALUES(814,'mod_anagrafica','mod_anagrafica','mod_gen','Anagrafica','fa fa fa-cubes',16,'Y','Y','Y',246,'N');
+INSERT INTO core_roles_permission(role_id,mod_id,mod_name,perm_read,perm_write,perm_update,perm_delete)
+					VALUES(1,814,'mod_anagrafica','Y','Y','Y','Y')

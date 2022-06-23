@@ -1,0 +1,18 @@
+DROP TABLE IF EXISTS _mod_anagrafica_green_pass_autocertificazione;
+CREATE TABLE IF NOT EXISTS _mod_anagrafica_green_pass_autocertificazione (
+ `id` int(10) NOT NULL auto_increment,
+ `fk_anagrafica` int(10) NOT NULL COMMENT 'Anagrafica',
+ `data_autocertificazione_fine_validita` date NOT NULL COMMENT 'Data Autocertificazione Fine Validita',
+ `documento_upload` longblob(4294967295) NOT NULL COMMENT 'Documento Upload',
+ `nome_documento` varchar(255) NOT NULL COMMENT 'Nome Documento',
+PRIMARY KEY (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;	
+			
+DELETE FROM core_module_list WHERE mod_name = 'mod_anagrafica_green_pass_autocertificazione';
+			
+DELETE FROM core_roles_permission WHERE mod_name = 'mod_anagrafica_green_pass_autocertificazione';
+			
+INSERT INTO core_module_list(mod_id,mod_name, class_name, mod_type, mod_title, mod_icon,mod_parentid, active, is_deletable,is_moveable,position,admin_perm_only)
+				VALUES(1016,'mod_anagrafica_green_pass_autocertificazione','mod_anagrafica_green_pass_autocertificazione','mod_gen','Autocertificazioni Green Pass','fa fa fa-cubes',889,'Y','Y','Y',444,'N');
+INSERT INTO core_roles_permission(role_id,mod_id,mod_name,perm_read,perm_write,perm_update,perm_delete)
+					VALUES(1,1016,'mod_anagrafica_green_pass_autocertificazione','Y','Y','Y','Y')
