@@ -1,0 +1,237 @@
+.error {
+	color: red;
+	font-weight: normal;
+}
+
+input[type="text"].mysearch_filter {
+	background: #fff url(http://i.stack.imgur.com/mJotv.gif) no-repeat right -10px center;
+	border: 1px solid #999;
+	padding: 3px 18px 3px 4px;
+	/* Use the same right padding (18) in jQ! */
+	border-radius: 3px;
+	transition: background 0.4s;
+}
+
+input[type="text"].mysearch_filter.x {
+	background-position: right 5px center;
+}
+
+
+/* (jQ) Show icon */
+
+input[type="text"].mysearch_filter.onX {
+	cursor: pointer;
+}
+
+
+/* (jQ) hover cursor style */
+
+input[type="text"].mysearch_filter::-ms-clear {
+	display: none;
+	width: 0;
+	height: 0;
+}
+
+
+input[type="text"]{
+	text-transform: uppercase;
+}
+
+
+/* Remove IE default X */
+
+[contenteditable] {
+	border: solid 1px lightgreen;
+	padding: 5px;
+	border-radius: 3px;
+}
+
+li.edit_tab {
+	background-color: #FFFFBF;
+}
+
+li.edit_tab:hover {
+	background-color: #FFFFBF;
+}
+
+.edit_tab.active a {
+	background-color: #FFFFBF !important;
+}
+
+li.new_tab {
+	background-color: #BFDFFF;
+}
+
+li.new_tab:hover {
+	background-color: #BFDFFF;
+}
+
+.new_tab.active a {
+	background-color: #BFDFFF !important;
+}
+
+li.read_tab {
+	background-color: #DEDEDE;
+}
+
+li.read_tab:hover {
+	background-color: #DEDEDE;
+}
+
+.read_tab.active a {
+	background-color: #DEDEDE !important;
+}
+
+li.testata_tab {
+	background-color: #DDDDDD;
+}
+
+li.testata_tab:hover {
+	background-color: #EEEEEE;
+}
+
+.testata_tab.active a {
+	background-color: #FFF !important;
+}
+
+li.dettaglio_tab {
+	background-color: #DDDDDD;
+}
+
+li.dettaglio_tab:hover {
+	background-color: #EEEEEE;
+}
+
+.dettaglio_tab.active a {
+	background-color: #FFF !important;
+}
+
+.TFtable {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 10px;
+}
+
+.TFtable td {
+	padding: 7px;
+	border: #A8A8B7 1px solid;
+}
+
+.TFtable th {
+    padding: 7px;
+    border: #A8A8B7 1px solid;background-color:#5885a1;
+	color: #FFF;
+}
+
+/* provide some minimal visual accomodation for IE8 and below */
+
+.TFtable tr {
+	background: #b8d1f3;
+}
+
+
+/*  Define the background color for all the ODD background rows  */
+
+.TFtable tr:nth-child(odd) {
+	background: #DDDDDD;
+}
+
+
+/*  Define the background color for all the EVEN background rows  */
+
+.TFtable tr:nth-child(even) {
+	background: #FFFFFF;
+}
+
+.dataTable th {
+	font-size: 12px;
+}
+
+.dataTable td {
+	font-size: 11px;
+}
+ 
+
+.custom-combobox {
+	position: relative;
+	display: inline-block;
+}
+
+.custom-combobox-toggle {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	margin-left: -1px;
+	padding: 0;
+}
+
+.custom-combobox-input {
+	margin: 0;
+	padding: 5px 10px;
+}
+
+td.day {
+	position: relative;
+}
+
+.datepicker table tr td.active:active,
+.datepicker table tr td.active.highlighted:active,
+.datepicker table tr td.active.active,
+.datepicker table tr td.active.highlighted.active {
+	background-color: #FF8000;
+	font-weight: bold;
+}
+
+.datepicker table tr td.today,
+.datepicker table tr td.today:active {
+	background-color: green;
+	font-weight: bold;
+	color: #FFFFFF;
+}
+
+.datepicker table tr td.disabled:active,
+.datepicker table tr td.disabled.highlighted:disabled,
+.datepicker table tr td.disabled.disabled,
+.datepicker table tr td.disabled.highlighted.disabled {
+	background-color: #888888;
+	/*background-color: #FF0000;*/
+	font-style: italic;
+	text-decoration: line-through;
+}
+
+td.day.disabled:hover:before {
+	content: 'Data non disponibile';
+	color: #fff;
+	background-color: #990000;
+	top: -22px;
+	position: absolute;
+	border-radius: 5px;
+	width: 136px;
+	left: -34px;
+	z-index: 1000;
+	text-align: center;
+	padding: 2px;
+}
+
+
+
+.autocompletamento{
+	width:100%;padding: 6px 12px;font-size:14px;
+	border-top-right-radius:0px;border-bottom-right-radius:0px;
+	border-top-left-radius:0px;border-bottom-left-radius:0px;
+	border:1px solid #ccc
+}
+
+.form-control:focus {
+	border-color: #729fcf;
+	box-shadow: 0px 1px 1px  #729fcf inset, 0px 0px 8px  #729fcf;
+}
+
+div.dropdown-menu.open{
+	max-height: 314px !important;
+	overflow: hidden;
+  }
+  ul.dropdown-menu.inner{
+	max-height: 260px !important;
+	overflow-y: auto;
+  }
