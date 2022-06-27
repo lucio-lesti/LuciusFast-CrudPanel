@@ -33,15 +33,15 @@ class BaseModel extends CI_Model
 
     protected $mod_type = "crud";           
 
+
     /**
+     * 
      * Costruttore della classe 
      */
     public function __construct(){
         parent::__construct();
-
         $this->utilities = new Utilities();
     }    
-
 
 
     /**
@@ -55,10 +55,11 @@ class BaseModel extends CI_Model
         $fields = array();
         $fieldsInfoDetails = array();
         $tableReferenced = array();
-        
+
+        //SE "enableCustomQueryMethod" FALSE, 
+        //COSTRUISCO LA QUERY IN BASE AI VALORI SETTATI DAL METODO "setFieldArrayGrid"
         if($this->enableCustomQueryMethod  == FALSE){
             foreach($this->arrayFieldGrid as $key => $field){
-                //print'<pre>';print_r($field);  
                 
                 if(isset($field['columns_referenced'])){
                     if(isset($this->arrayColumnsReferenced[$field['tablename_referenced']]['nome'])){
@@ -103,6 +104,7 @@ class BaseModel extends CI_Model
                         }
                         $myField .= ") AS ".$alias;
                     } else {
+                        //CAMPO DI TIPO DATE/DATETIME/TIMESTAMP
                         if($field['type'] == 'FIELD_DATE'){
                             $myField = " DATE_FORMAT(".$field['tablename_referenced'].".".$field_columns_referenced_nome.",'%d/%m/%Y') AS ".$field['tablename_referenced']."_".$field_columns_referenced_nome;
                         } elseif($field['type'] == 'FIELD_DATETIME'){
@@ -111,11 +113,8 @@ class BaseModel extends CI_Model
                             $myField = ' CONCAT(\'| ALLEGATO\',\' |\') AS '.$field['tablename_referenced']."_".$field_columns_referenced_nome;
                         } elseif($field['type'] == 'FIELD_BLOB_IMG'){
                             $myField = ' CONCAT(\'<img src="data:image/jpeg;base64,\',TO_BASE64('.$field['tablename_referenced'].".".$field_columns_referenced_nome.'),\'" style="width:90px" />\') AS '.$field['tablename_referenced']."_".$field_columns_referenced_nome;
-                        } elseif($field['type'] == 'FIELD_FLOAT'){
-                        
-                            //$myField = " FORMAT(".$this->table.".".$field['field'] .",2,'it_IT') AS ".$this->table."_".$field['field'];      
-                            $myField = " FORMAT(".$field['tablename_referenced'].".".$field_columns_referenced_nome .",2,'it_IT') AS ".$field['tablename_referenced']."_".$field_columns_referenced_nome;            
-                        
+                        } elseif($field['type'] == 'FIELD_FLOAT'){                      
+                             $myField = " FORMAT(".$field['tablename_referenced'].".".$field_columns_referenced_nome .",2,'it_IT') AS ".$field['tablename_referenced']."_".$field_columns_referenced_nome;                                    
                         } else {
                             $myField = $field['tablename_referenced'].".".$field_columns_referenced_nome." AS ".$field['tablename_referenced']."_".$field_columns_referenced_nome;
                         }    
@@ -124,8 +123,8 @@ class BaseModel extends CI_Model
 
 
                     $fields[] = $myField;
-                    //print'<pre>';print_r($field_columns_referenced_nome);   
-
+ 
+                    //TABELLE REFERENZIATE
                     $tableReferenced[$field['tablename_referenced']] = array("column"=> $field['field'], 
                                                                             'tablename_referenced'=> $field['tablename_referenced'],
                                                                             'tablename_referenced_pk' => $field['columns_referenced']['id'],
@@ -133,7 +132,6 @@ class BaseModel extends CI_Model
                                                                             "join_condition"=> $field['join_condition'] );
 
                     if($isConcat == 'TRUE'){
-                        //echo $field_columns_referenced_nome;
                         $fieldsInfoDetails[$field['columns_referenced']['nome']]['table'] = $field['tablename_referenced'];
                         $fieldsInfoDetails[$field['columns_referenced']['nome']]['ref_by_field'] = $field['field'];
                         $fieldsInfoDetails[$field['columns_referenced']['nome']]['field_name'] = $field_columns_referenced_nome;                        
@@ -156,6 +154,8 @@ class BaseModel extends CI_Model
                             $fieldsInfoDetails[$this->table."_".$field['field']]['field_alias_name'] = $this->table.".".$field['field']." AS id";                          
     
                         } else {
+
+                            //CAMPO DI TIPO DATE/DATETIME/TIMESTAMP
                             if($field['type'] == 'FIELD_DATE'){
                                 $myField = " DATE_FORMAT(".$this->table.".".$field['field'] .",'%d/%m/%Y') AS ".$this->table."_".$field['field'];
                             } elseif($field['type'] == 'FIELD_DATETIME'){
@@ -187,14 +187,10 @@ class BaseModel extends CI_Model
                     
                 }
             }        
-        }    
-
-        //print'<pre>';print_r($fieldsInfoDetails);
-        //die();     
+        }       
 
         //PRELEVO PRIVILEGI
         $perm_read = "";
-
         $perm_write = "";
         $perm_update = "";
         $perm_delete = "";
@@ -209,13 +205,11 @@ class BaseModel extends CI_Model
 			}
 		}
 
-        
-        //print_r($fields);
+    
         if($this->enableCustomQueryMethod  == FALSE){
             $this->datatables->select(implode(",",$fields));
             $this->datatables->from($this->table);
             foreach($tableReferenced as $key => $val){
-                //print'<pre>';print_r($val);
                 $this->datatables->join($val['tablename_referenced'], $this->table.'.'.$val['column'].' = '.$val['tablename_referenced'].'.'.$val['tablename_referenced_pk'], $val['join'], $val['join_condition']);
             }
         } else {
@@ -238,8 +232,8 @@ class BaseModel extends CI_Model
         }
         
        
+        //SE IL MODULO E' DI TIPO "CRUD", AGGIUNGO I PULSANTI ADD,EDIT,DELETE
         if($this->mod_type == 'crud'){
-
             $button = "";   
             if($perm_read == 'Y'){
                 $button .= "<a onclick='readAjax(\"$this->mod_name\",$1)' class='btn btn-sm btn-default' title='Visualizza'><i class='fa fa-eye'></i></a><br>";
@@ -252,24 +246,9 @@ class BaseModel extends CI_Model
             }  
 
             $this->datatables->add_column('action', $button, 'id');
-            //if($this->mod_type == "crud"){
-                $this->datatables->add_column('ids', '<input type="checkbox" id="check_id" name="check_id" value="$1" onchange="verificaNrCheckBoxSelezionati(\'check_id\',\'btDeleteMass\')" />', $this->id);             
-            //}
+            $this->datatables->add_column('ids', '<input type="checkbox" id="check_id" name="check_id" value="$1" onchange="verificaNrCheckBoxSelezionati(\'check_id\',\'btDeleteMass\')" />', $this->id);             
 
         } 
-
-
-        //print'<pre>';print_r($searchFilter);
-        //print'<pre>';print_r($fieldsInfoDetails);
-        /*
-        //DISABILITATO PERCHE I FILTRI VENGONO PRESI UGUALMENTE, INOLTRE DAVA PROBLEMI CON I CAMPI CONCATENATI
-        foreach ($searchFilter as $key => $value) {
-            if ($value['value'] != '') {
-                $value['field'] = $fieldsInfoDetails[$value['field']]['table'].".".$fieldsInfoDetails[$value['field']]['field_name'];
-                $this->datatables->like($value['field'], $value['value']);
-            }               
-        }
-        */
 
         return $this->datatables->generate();
     }
@@ -350,76 +329,6 @@ class BaseModel extends CI_Model
     }
     
     
-
-    public function getFieldsDetails($table = NULL){
-        if($table == NULL){
-            $table = $this->table;
-        }
-        $query = "SELECT TABLE_NAME,COLUMN_NAME,COLUMN_KEY,DATA_TYPE,COLUMN_TYPE,CHARACTER_MAXIMUM_LENGTH,
-                    NUMERIC_PRECISION,NUMERIC_SCALE,COLUMN_COMMENT,
-                    IS_NULLABLE,DATETIME_PRECISION,EXTRA 
-                FROM INFORMATION_SCHEMA.COLUMNS 
-                WHERE TABLE_SCHEMA='".$this->db->database."' 
-                AND TABLE_NAME='".$table."'";
-
-        $res = $this->db->query($query)->result_array();
-        $fields = array();
-        foreach ($res as $key => $row) {		
-            $fields[$row['COLUMN_NAME']]['TABLE_NAME'] = $row['TABLE_NAME'];	
-            $fields[$row['COLUMN_NAME']]['COLUMN_NAME'] = $row['COLUMN_NAME'];
-            $fields[$row['COLUMN_NAME']]['COLUMN_KEY'] = $row['COLUMN_KEY'];
-            $fields[$row['COLUMN_NAME']]['DATA_TYPE'] = $row['DATA_TYPE'];
-            $fields[$row['COLUMN_NAME']]['CHARACTER_MAXIMUM_LENGTH'] = $row['CHARACTER_MAXIMUM_LENGTH'];
-            $fields[$row['COLUMN_NAME']]['NUMERIC_PRECISION'] = $row['NUMERIC_PRECISION'];
-            $fields[$row['COLUMN_NAME']]['NUMERIC_SCALE'] = $row['NUMERIC_SCALE'];
-            $fields[$row['COLUMN_NAME']]['COLUMN_COMMENT'] = $row['COLUMN_COMMENT'];
-            $fields[$row['COLUMN_NAME']]['IS_NULLABLE'] = $row['IS_NULLABLE'];
-            $fields[$row['COLUMN_NAME']]['DATETIME_PRECISION'] = $row['DATETIME_PRECISION'];
-            $fields[$row['COLUMN_NAME']]['EXTRA'] = $row['EXTRA'];
-            $fields[$row['COLUMN_NAME']]['COLUMN_TYPE'] = $row['COLUMN_TYPE'];
-        }		
-        return $fields;               
-    }
-
-
-
-
-     /**
-     * 
-     * Restituisce tutti i records di una tabella
-     * @return array
-     */
-    public function get_all_from_master_details($id, $table, $pkField){
-        $this->db->where($pkField, $id);
-        return $this->db->get($table)->result();
-    }
-    
-    
-
-      /**
-     * 
-     * Restituisce tutti i records di una tabella
-     * @return array
-     */
-    public function get_from_master_details_by_id($id, $tableMasterDetails, $pkField){
-        $arrayReturn = array();
-        $list_fields = $this->db->list_fields($tableMasterDetails);
-        foreach($list_fields as $k => $v){
-            $arrayReturn[$v] = NULL;
-        }
-        $this->db->where($pkField, $id);
-
-        $rows = $this->db->get($tableMasterDetails)->row();
-        $rows = (array) $rows;
-        //print'<pre>';print_r($rows);
- 
-        if(count($rows) > 0){
-            $arrayReturn = $rows;
-        } 
-
-        return $arrayReturn;
-    }
-    
     
 
     /**
@@ -465,6 +374,7 @@ class BaseModel extends CI_Model
     }
 
 
+
     /**
      * 
      * Inserisce un record in tabella 
@@ -483,11 +393,9 @@ class BaseModel extends CI_Model
         $ModuleTitleByForeignKeyFailed =  $this->getModuleTitleByForeignKeyFailed($Err['message']);
         $Err['module_title'] = $ModuleTitleByForeignKeyFailed ['module_title'];
         $Err['table_name'] = $ModuleTitleByForeignKeyFailed ['table_name'];
-        //print'<pre>';print_r($Err);die();
-
-        //return $Err['code'];
         return $Err;
     }
+
 
 
     /**
@@ -509,15 +417,11 @@ class BaseModel extends CI_Model
 
         $ModuleTitleByForeignKeyFailed =  $this->getModuleTitleByForeignKeyFailed($Err['message']);
 
-        //print'<pre>';print_r($ModuleTitleByForeignKeyFailed);
         $Err['module_title'] = $ModuleTitleByForeignKeyFailed ['module_title'];
         $Err['table_name'] = $ModuleTitleByForeignKeyFailed ['table_name'];
-        //print'<pre>';print_r($Err);
-        //die();
-
-        //return $Err['code'];
         return $Err;  
     }
+
 
 
     /**
@@ -539,12 +443,10 @@ class BaseModel extends CI_Model
         $ModuleTitleByForeignKeyFailed =  $this->getModuleTitleByForeignKeyFailed($Err['message']);
         $Err['module_title'] = $ModuleTitleByForeignKeyFailed ['module_title'];
         $Err['table_name'] = $ModuleTitleByForeignKeyFailed ['table_name'];
-        //print'<pre>';print_r($Err);die();
-
-        //return $Err['code'];
         return $Err;
         
     }
+
 
 
     /**
@@ -568,11 +470,9 @@ class BaseModel extends CI_Model
         $ModuleTitleByForeignKeyFailed =  $this->getModuleTitleByForeignKeyFailed($Err['message']);
         $Err['module_title'] = $ModuleTitleByForeignKeyFailed ['module_title'];
         $Err['table_name'] = $ModuleTitleByForeignKeyFailed ['table_name'];
-        //print'<pre>';print_r($Err);die();
-
-        //return $Err['code'];
         return $Err;        
     }
+
 
 
     /**
@@ -581,7 +481,6 @@ class BaseModel extends CI_Model
      * @param array $data
      */
     public function insert_master_details(Array $data){
-        //print'<pre>';print_r($data);
         $table = $data['table'];
         unset($data['table']);     
         if(isset($data['entry_to_delete_master'])){
@@ -591,7 +490,6 @@ class BaseModel extends CI_Model
         $orig_db_debug = $this->db->db_debug;
         $this->db->db_debug = FALSE;
 
-        //print'<pre>';print_r($data);
         
         $this->db->insert($table, $data);
 
@@ -602,9 +500,6 @@ class BaseModel extends CI_Model
         $ModuleTitleByForeignKeyFailed =  $this->getModuleTitleByForeignKeyFailed($Err['message']);
         $Err['module_title'] = $ModuleTitleByForeignKeyFailed ['module_title'];
         $Err['table_name'] = $ModuleTitleByForeignKeyFailed ['table_name'];
-        //print'<pre>';print_r($Err);die(); 
-        
-        //return $Err['code'];
         return $Err;    
     }
 
@@ -619,8 +514,6 @@ class BaseModel extends CI_Model
     public function update_master_details($id, $data){
         $table = $data['table'];
         unset($data['table']);        
-        
-        //print'<pre>';print_r($data);
 
         $orig_db_debug = $this->db->db_debug;
         $this->db->db_debug = FALSE;
@@ -635,18 +528,76 @@ class BaseModel extends CI_Model
         $ModuleTitleByForeignKeyFailed =  $this->getModuleTitleByForeignKeyFailed($Err['message']);
         $Err['module_title'] = $ModuleTitleByForeignKeyFailed ['module_title'];
         $Err['table_name'] = $ModuleTitleByForeignKeyFailed ['table_name'];
-        //print'<pre>';print_r($Err);die();
+        return $Err;         
+    }
 
-        //return $Err['code'];
+
+
+    /**
+     * 
+     * Elimina un record in una tabella referenziata per il master-details 
+     * @param mixed $id_row_master_details
+     * @param mixed $table
+     */
+    public function delete_row_master_details($id_row_master_details, $table){        
+        $orig_db_debug = $this->db->db_debug;
+        $this->db->db_debug = FALSE;
+
+        $this->db->where('id', $id_row_master_details);
+        $this->db->delete($table);  
+
+        $this->db->db_debug = $orig_db_debug;
+
+        $Err = $this->db->error();
+
+        $ModuleTitleByForeignKeyFailed =  $this->getModuleTitleByForeignKeyFailed($Err['message']);
+        $Err['module_title'] = $ModuleTitleByForeignKeyFailed ['module_title'];
+        $Err['table_name'] = $ModuleTitleByForeignKeyFailed ['table_name'];
         return $Err;         
     }
 
 
     /**
      * 
+     * Restituisce tutti i records di una tabella
+     * @return array
+     */
+    public function get_from_master_details_by_id($id, $tableMasterDetails, $pkField){
+        $arrayReturn = array();
+        $list_fields = $this->db->list_fields($tableMasterDetails);
+        foreach($list_fields as $k => $v){
+            $arrayReturn[$v] = NULL;
+        }
+        $this->db->where($pkField, $id);
+
+        $rows = $this->db->get($tableMasterDetails)->row();
+        $rows = (array) $rows;
+ 
+        if(count($rows) > 0){
+            $arrayReturn = $rows;
+        } 
+
+        return $arrayReturn;
+    }
+    
+
+
+    /**
+     * @deprecated
+     * Restituisce tutti i records di una tabella
+     * @return array
+     */
+    public function get_all_from_master_details($id, $table, $pkField){
+        $this->db->where($pkField, $id);
+        return $this->db->get($table)->result();
+    }
+    
+    
+
+    /**
+     * 
      * Ritorna il nome del modulo per iil quale fallisce la chiave constraint
      * @param string $sqlMsgError
-     * @param string $moduleTitle
      */
     private function getModuleTitleByForeignKeyFailed(String $sqlMsgError){
         $array_return = array("module_title" => "", "table_name" => "");
@@ -695,39 +646,13 @@ class BaseModel extends CI_Model
     }
 
 
-    /**
-     * 
-     * Elimina un record in una tabella referenziata per il master-details 
-     * @param mixed $id_row_master_details
-     * @param mixed $table
-     */
-    public function delete_row_master_details($id_row_master_details, $table){        
-        $orig_db_debug = $this->db->db_debug;
-        $this->db->db_debug = FALSE;
-
-        $this->db->where('id', $id_row_master_details);
-        $this->db->delete($table);  
-
-        $this->db->db_debug = $orig_db_debug;
-
-        $Err = $this->db->error();
-
-        $ModuleTitleByForeignKeyFailed =  $this->getModuleTitleByForeignKeyFailed($Err['message']);
-        $Err['module_title'] = $ModuleTitleByForeignKeyFailed ['module_title'];
-        $Err['table_name'] = $ModuleTitleByForeignKeyFailed ['table_name'];
-        //print'<pre>';print_r($Err);die();
-
-        //return $Err['code'];
-        return $Err;         
-    }
-
-
        
 
     /**
      * 
      * Elimina un set di records in tabella 
      * @param array $entryListArray
+     * @param string $table
      */
     public function delete_massive_master_details(Array $entryListArray, $table){
         $orig_db_debug = $this->db->db_debug;
@@ -745,11 +670,9 @@ class BaseModel extends CI_Model
         $ModuleTitleByForeignKeyFailed =  $this->getModuleTitleByForeignKeyFailed($Err['message']);
         $Err['module_title'] = $ModuleTitleByForeignKeyFailed ['module_title'];
         $Err['table_name'] = $ModuleTitleByForeignKeyFailed ['table_name'];
-        //print'<pre>';print_r($Err);die();
-
-        //return $Err['code'];
         return $Err;      
     }
+
 
 
     /**
@@ -771,9 +694,12 @@ class BaseModel extends CI_Model
 
 
     /**
+     * 
      * Override della funzione presente in user_model
      * Necessaria per non dover importare la classe e creare errori
      *
+     * @param mixed|null $roleid
+     * 
      */
     public function getPermissionRole($roleid){
         switch($this->db->dbdriver){
@@ -841,165 +767,8 @@ class BaseModel extends CI_Model
             $sql .= " ".$where_condition;
         }
 
-        //echo $sql."<br";
         return $this->db->query($sql)->result_array();	;
     }
-
-
-
-    /**
-     * 
-     * 
-     * @param int $id
-     * @return array
-     */
-    protected function getFieldArraySearchById(int $id){
-        return $this->arrayFieldSearch[$id];
-    }
-    
-
-
-    /**
-     * 
-     * 
-     * @return array
-     */
-    public function getFieldsArrayGrid(){
-        return $this->arrayFieldGrid;
-    }
-    
-
-    /**
-     * 
-     * 
-     * @param int $id
-     * @return array
-     */
-    protected function getFieldArrayGridById(int $id){
-        return $this->arrayFieldGrid[$id];
-    }
-    
-    
-    /**
-     * 
-     * 
-     * @param string $fieldName
-     * @return string
-     */
-    protected function getFieldArraySearchByName(String $fieldName){
-        $fieldToReturn = NULL;
-        foreach($this->arrayFieldSearch as $key => $value){
-            if($value['field'] == $fieldName){
-                $fieldToReturn = $value;
-                break;
-            }
-        }
-        return $fieldToReturn;
-    }
-        
-
-
-    /**
-     * 
-     * 
-     * @param string $fieldName
-     * @return string
-     */
-    protected function getFieldArrayGridByName(String $fieldName){
-        $fieldToReturn = NULL;
-        foreach($this->arrayFieldGrid as $key => $value){
-            if($value['field'] == $fieldName){
-                $fieldToReturn = $value;
-                break;
-            }
-        }
-        return $fieldToReturn;
-    }
-    
-
-    
-    /**
-     * 
-     * 
-     * @param string $fieldName
-     * @return string
-     */
-    protected function getFieldTypeArraySearchByName(String $fieldName){
-        $fieldTypeToReturn = NULL;
-        foreach($this->arrayFieldSearch as $key => $value){
-            if($value['field'] == $fieldName){
-                $fieldTypeToReturn = $value['type'];
-                break;
-            }
-        }
-        return $fieldTypeToReturn;
-    }
-
-
-    /**
-     * 
-     * 
-     * @param string $fieldName
-     * @return string
-     */
-    protected function getFieldTypeArrayGridByName(String $fieldName){
-        $fieldTypeToReturn = NULL;
-        foreach($this->arrayFieldGrid as $key => $value){
-            if($value['field'] == $fieldName){
-                $fieldTypeToReturn = $value['type'];
-                break;
-            }
-        }
-        return $fieldTypeToReturn;
-    }
-    
-    
-    /**
-     * 
-     * 
-     * @param string $fieldType
-     * @return array
-     */
-    protected function getFieldsArraySearchByType(String $fieldType){
-        $fieldListToReturn = array();
-        foreach($this->arrayFieldSearch as $key => $value){
-            if($value['type'] == $fieldType){
-                $fieldListToReturn[] = $value;
-            }
-        }
-        return $fieldListToReturn;
-    }
-
-
-    /**
-     * 
-     * @param string $fieldType
-     * @return array
-     */
-    protected function getFieldsArrayGridByType(String $fieldType){
-        $fieldListToReturn = array();
-        foreach($this->arrayFieldGrid as $key => $value){
-            if($value['type'] == $fieldType){
-                $fieldListToReturn[] = $value;
-            }
-        }
-        return $fieldListToReturn;
-    }
-
-
-    /**
-     * 
-     * @param string $fieldName
-     * @param string $fieldType
-     * @return array
-     */
-    protected function setFieldArraySearch(String $fieldName, String $fieldType){
-        if(($fieldType != FIELD_STRING) && ($fieldType != FIELD_NUMERIC)){
-            $fieldType = FIELD_STRING;
-        }
-        $this->arrayFieldSearch[] = array("field" => $fieldName, 'type' => $fieldType);
-    }
-
 
 
 
@@ -1034,14 +803,15 @@ class BaseModel extends CI_Model
     }
     
 
+
     /**
-     * This function used to get role information by id
-     * @param number $roleid : This is role id
-     * @param number $moduleId : This is module id
-     * @return array $result : This is user information
+     * 
+     * Preleva i permessi
+     * @param number $roleid : id ruolo
+     * @param number $moduleId : id modulo
+     * @return array $result : user information
      */
     public function getPermissionRoleTabs($roleid, $moduleName, $funcName = ''){
-        //die(var_dump($funcName));
         $sql = "SELECT COUNT(*) AS have_tab_perm  FROM core_roles_permission_tabs
             WHERE role_id = ".$roleid." AND mod_name = '".$moduleName."' AND function_tab='".$funcName."'";
         
@@ -1050,8 +820,48 @@ class BaseModel extends CI_Model
     }    
 
 
+
     /**
      * 
+     * Restituisce i dettagli di un campo di una tabella
+     * @param string $table
+     * 
+     */
+    public function getFieldsDetails($table = NULL){
+        if($table == NULL){
+            $table = $this->table;
+        }
+        $query = "SELECT TABLE_NAME,COLUMN_NAME,COLUMN_KEY,DATA_TYPE,COLUMN_TYPE,CHARACTER_MAXIMUM_LENGTH,
+                    NUMERIC_PRECISION,NUMERIC_SCALE,COLUMN_COMMENT,
+                    IS_NULLABLE,DATETIME_PRECISION,EXTRA 
+                FROM INFORMATION_SCHEMA.COLUMNS 
+                WHERE TABLE_SCHEMA='".$this->db->database."' 
+                AND TABLE_NAME='".$table."'";
+
+        $res = $this->db->query($query)->result_array();
+        $fields = array();
+        foreach ($res as $key => $row) {		
+            $fields[$row['COLUMN_NAME']]['TABLE_NAME'] = $row['TABLE_NAME'];	
+            $fields[$row['COLUMN_NAME']]['COLUMN_NAME'] = $row['COLUMN_NAME'];
+            $fields[$row['COLUMN_NAME']]['COLUMN_KEY'] = $row['COLUMN_KEY'];
+            $fields[$row['COLUMN_NAME']]['DATA_TYPE'] = $row['DATA_TYPE'];
+            $fields[$row['COLUMN_NAME']]['CHARACTER_MAXIMUM_LENGTH'] = $row['CHARACTER_MAXIMUM_LENGTH'];
+            $fields[$row['COLUMN_NAME']]['NUMERIC_PRECISION'] = $row['NUMERIC_PRECISION'];
+            $fields[$row['COLUMN_NAME']]['NUMERIC_SCALE'] = $row['NUMERIC_SCALE'];
+            $fields[$row['COLUMN_NAME']]['COLUMN_COMMENT'] = $row['COLUMN_COMMENT'];
+            $fields[$row['COLUMN_NAME']]['IS_NULLABLE'] = $row['IS_NULLABLE'];
+            $fields[$row['COLUMN_NAME']]['DATETIME_PRECISION'] = $row['DATETIME_PRECISION'];
+            $fields[$row['COLUMN_NAME']]['EXTRA'] = $row['EXTRA'];
+            $fields[$row['COLUMN_NAME']]['COLUMN_TYPE'] = $row['COLUMN_TYPE'];
+        }		
+        return $fields;               
+    }
+    
+    
+    /**
+     * 
+     * Restituisce le colonne di una tabella 
+     * @param string $table : nome tabell
      */
     public function getColumnsTable($table){
 		switch($this->db->dbdriver){	
@@ -1063,7 +873,6 @@ class BaseModel extends CI_Model
 							WHERE TABLE_SCHEMA='".$this->db->database."' 
 							AND TABLE_NAME='".$table."' 
                             ORDER BY ORDINAL_POSITION";
-                //echo $sql;
 			break;
 			
 			case 'postgre':
@@ -1102,6 +911,165 @@ class BaseModel extends CI_Model
         return $this->db->query($sql)->result_array();	;
 
     }
+
+
+    /**
+     * 
+     * Ritorna i campi della griglia
+     * @return array
+     */
+    public function getFieldsArrayGrid(){
+        return $this->arrayFieldGrid;
+    }
+
+
+    /**
+     * 
+     * @deprecated
+     * @param int $id
+     * @return array
+    */
+    protected function getFieldArraySearchById(int $id){
+        return $this->arrayFieldSearch[$id];
+    }
+    
+    
+
+    /**
+     * 
+     * @deprecated
+     * @param int $id
+     * @return array
+     */
+    protected function getFieldArrayGridById(int $id){
+        return $this->arrayFieldGrid[$id];
+    }
+    
+    
+    /**
+     * 
+     * @deprecated
+     * @param string $fieldName
+     * @return string
+     */
+    protected function getFieldArraySearchByName(String $fieldName){
+        $fieldToReturn = NULL;
+        foreach($this->arrayFieldSearch as $key => $value){
+            if($value['field'] == $fieldName){
+                $fieldToReturn = $value;
+                break;
+            }
+        }
+        return $fieldToReturn;
+    }
+        
+
+
+    /**
+     * 
+     * @deprecated
+     * @param string $fieldName
+     * @return string
+     */
+    protected function getFieldArrayGridByName(String $fieldName){
+        $fieldToReturn = NULL;
+        foreach($this->arrayFieldGrid as $key => $value){
+            if($value['field'] == $fieldName){
+                $fieldToReturn = $value;
+                break;
+            }
+        }
+        return $fieldToReturn;
+    }
+    
+
+    
+    /**
+     * 
+     * @deprecated
+     * @param string $fieldName
+     * @return string
+     */
+    protected function getFieldTypeArraySearchByName(String $fieldName){
+        $fieldTypeToReturn = NULL;
+        foreach($this->arrayFieldSearch as $key => $value){
+            if($value['field'] == $fieldName){
+                $fieldTypeToReturn = $value['type'];
+                break;
+            }
+        }
+        return $fieldTypeToReturn;
+    }
+
+
+    /**
+     * 
+     * @deprecated
+     * @param string $fieldName
+     * @return string
+     */
+    protected function getFieldTypeArrayGridByName(String $fieldName){
+        $fieldTypeToReturn = NULL;
+        foreach($this->arrayFieldGrid as $key => $value){
+            if($value['field'] == $fieldName){
+                $fieldTypeToReturn = $value['type'];
+                break;
+            }
+        }
+        return $fieldTypeToReturn;
+    }
+    
+    
+    /**
+     * 
+     * @deprecated
+     * @param string $fieldType
+     * @return array
+     */
+    protected function getFieldsArraySearchByType(String $fieldType){
+        $fieldListToReturn = array();
+        foreach($this->arrayFieldSearch as $key => $value){
+            if($value['type'] == $fieldType){
+                $fieldListToReturn[] = $value;
+            }
+        }
+        return $fieldListToReturn;
+    }
+
+
+    /**
+     * 
+     * @deprecated
+     * @param string $fieldType
+     * @return array
+     */
+    protected function getFieldsArrayGridByType(String $fieldType){
+        $fieldListToReturn = array();
+        foreach($this->arrayFieldGrid as $key => $value){
+            if($value['type'] == $fieldType){
+                $fieldListToReturn[] = $value;
+            }
+        }
+        return $fieldListToReturn;
+    }
+
+
+    /**
+     * 
+     * @deprecated
+     * Imposta l'array per le ricerche
+     * @param string $fieldName
+     * @param string $fieldType
+     * @return array
+     */
+
+    protected function setFieldArraySearch(String $fieldName, String $fieldType){
+        if(($fieldType != FIELD_STRING) && ($fieldType != FIELD_NUMERIC)){
+            $fieldType = FIELD_STRING;
+        }
+        $this->arrayFieldSearch[] = array("field" => $fieldName, 'type' => $fieldType);
+    }
+
 
 
 }
