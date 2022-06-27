@@ -36,20 +36,6 @@ class Mod_sport extends BaseController
 		//ALLA CHIAVE 'NOME', IL NOMINATIVO DEL CAMPO COLLEGATO
 		$this->setFormFields('sport');
 		$this->setFormFields('id');
-
-
-		//ABILITARE PER LE OPERAZIONI "CUSTOM"
-
-		//LA CHIAVE DEL VETTORE "custom_operations_list" RAPPRESENTA IL NOME DELLA FUNZIONE
-		//QUESTO PER AVERE UN CODICE ORDINATO E PER EVITARE CHE LE FUNZIONI CUSTOM NON VENGANO RICHIAMATE CORRETTAMENTE
-		/*$this->custom_operations_list['mod_sport_check_date'] = function($request, $id = NULL){
-			$ret = $this->utilities->check_date_greater_then($request['data_da'], $request['data_a']);
-			if($ret === FALSE){
-				$this->session->set_flashdata('error',"Data Da non puo essere maggiore di Data a");
-				return false;
-			}				
-		};*/
-
 	}
 
 
