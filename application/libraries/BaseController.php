@@ -120,7 +120,9 @@ class BaseController extends MY_Controller
 	protected $arrayComboGridFilter = array();
 
 
+
 	/**
+	 * 
 	 * Costruttore della classe 
 	 */
 	public function __construct()
@@ -138,6 +140,7 @@ class BaseController extends MY_Controller
 
 		$this->utilities = new Utilities();
 
+		//VERIFICO SE L'IP CHE SI CONNETTE AL PANNELLO E' AUTORIZZATO
 		$this->checkIpAddressEnabled();
 		$child_class_caller = get_class($this);
 		if ($child_class_caller != "Login") {
@@ -146,6 +149,8 @@ class BaseController extends MY_Controller
 			if (!isset($isLoggedIn) || $isLoggedIn != TRUE) {
 				redirect('login');
 			} else {
+
+				//VERIFICO SE L'UTENTE HA I PRIVILEGI PER IL MODULO 
 				if ($child_class_caller != "User") {
 					if ($this->isAdmin() == FALSE) {
 						$this->checkRoleHasPrivilege($child_class_caller);
@@ -163,6 +168,7 @@ class BaseController extends MY_Controller
 
 
 	/**
+	 * 
 	 * Verifica se il ruolo ha accesso al modulo  
 	 * @param mixed $child_class_caller
 	 */
@@ -176,6 +182,7 @@ class BaseController extends MY_Controller
 
 
 	/**
+	 * 
 	 * Verifica se l'IP è abilitato
 	 */
 	private function checkIpAddressEnabled()
@@ -192,6 +199,7 @@ class BaseController extends MY_Controller
 
 
 	/**
+	 * 
 	 * Manda un messaggio agli amministratori su un tentativo da parte di un IP non autorizzato
 	 */
 	public function ipAddresDenied()
@@ -223,7 +231,9 @@ class BaseController extends MY_Controller
 	}
 
 
+
 	/**
+	 * 
 	 * Manda una mail agli amministratori
 	 * @param mixed $subject
 	 * @param mixed $message
@@ -246,19 +256,6 @@ class BaseController extends MY_Controller
 	}
 
 
-	/**
-	 * 
-	 * Con dati in input di tipo MIXED e di tipo status code crea la risposta
-	 * @param array|NULL $data
-	 *        	Data to output to the user
-	 *        	running the script; otherwise, exit
-	 */
-	public function response($data = NULL)
-	{
-		$this->output->set_status_header(200)->set_content_type('application/json', 'utf-8')->set_output(json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES))->_display();
-		exit();
-	}
-
 
 	/**
 	 * Verifica che l'utente sia autenticato o meno
@@ -275,6 +272,7 @@ class BaseController extends MY_Controller
 	}
 
 
+
 	/**
 	 * Verifica se il ruolo con cui si è autenticati è di tipo ADMIN
 	 */
@@ -288,49 +286,9 @@ class BaseController extends MY_Controller
 	}
 
 
+
 	/**
 	 * 
-	 * Verifica se il ruolo con cui si è autenticati è di tipo ADMIN o MANAGER
-	 * @deprecated
-	 */
-	public function isManagerOrAdmin()
-	{
-		if ($this->role == ROLE_ADMIN || $this->role == ROLE_MANAGER) {
-			return false;
-		} else {
-			return true;
-		}
-	}
-
-
-	/**
-	 * Ritorna lo stato dell' utente
-	 */
-	public function getUserStatus()
-	{
-		$this->datas();
-		$status = $this->user_model->getUserStatus($this->vendorId);
-		if ($status->status == 0) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-
-	/**
-	 * Reindirizzamento alla pagina di accesso non autorizzato
-	 */
-	public function accesslogincontrol()
-	{
-		$process = 'accesslogincontrol';
-		$processFunction = 'Admin/accesslogincontrol';
-		$this->logrecord($process, $processFunction);
-		redirect(noaccess);
-	}
-
-
-	/**
 	 * Logout del sistema con azzeramento della sessione
 	 */
 	public function logout()
@@ -346,7 +304,9 @@ class BaseController extends MY_Controller
 	}
 
 
+
 	/**
+	 * 
 	 * Reimplementazione della fuzione view di codeigniter
 	 * @param {string} $viewName : This is view name
 	 * @param {mixed} $headerInfo : This is array of header information
@@ -356,8 +316,6 @@ class BaseController extends MY_Controller
 	 */
 	public function loadViews($viewName = "", $headerInfo = NULL, $pageInfo = NULL, $footerInfo = NULL)
 	{
-
-
 		$headerInfo['mod_active'] = $this->user_model->getAllModActive();
 
 		//MOSTRO TUTTI I MODULI GENERATI SE AMMINISTRATORE
@@ -374,10 +332,11 @@ class BaseController extends MY_Controller
 		$headerInfo['skin_color'] = $settings[0]->skin_color;
 		$headerInfo['company_logo'] = $settings[0]->company_logo;
 		$headerInfo['company_name'] = $settings[0]->company_name;
-		//$headerInfo['notifyList'] =  $this->user_model->getNotifyList();
+
+		
+		//RESTITUISCO IN FORMATO ARRAY, TUTTE LE NOTIFICHE PER IL MODULO
 		$headerInfo['notifyList'] =  $this->home_model->getNotifyList();
 		$headerInfo['notifyListCount'] =  $this->home_model->getNotifyListCount();
-		//print'<pre>';print_r($headerInfo['notifyListCount']);
 
 		$this->load->view('includes/header', $headerInfo);
 		$this->load->view($viewName, $pageInfo);
@@ -385,54 +344,11 @@ class BaseController extends MY_Controller
 	}
 
 
-	/**
-	 * This function used provide the pagination resources
-	 * @param {string} $link : This is page link
-	 * @param {number} $count : This is page count
-	 * @param {number} $perPage : This is records per page limit
-	 * @return {mixed} $result : This is array of records and pagination data
-	 */
-	public function paginationCompress($link, $count, $perPage = 10, $segment = SEGMENT)
-	{
-		$this->load->library('pagination');
-
-		$config['base_url'] = base_url() . $link;
-		$config['total_rows'] = $count;
-		$config['uri_segment'] = $segment;
-		$config['per_page'] = $perPage;
-		$config['num_links'] = 5;
-		$config['full_tag_open'] = '<nav><ul class="pagination">';
-		$config['full_tag_close'] = '</ul></nav>';
-		$config['first_tag_open'] = '<li class="arrow">';
-		$config['first_link'] = 'First';
-		$config['first_tag_close'] = '</li>';
-		$config['prev_link'] = 'Previous';
-		$config['prev_tag_open'] = '<li class="arrow">';
-		$config['prev_tag_close'] = '</li>';
-		$config['next_link'] = 'Next';
-		$config['next_tag_open'] = '<li class="arrow">';
-		$config['next_tag_close'] = '</li>';
-		$config['cur_tag_open'] = '<li class="active"><a href="#">';
-		$config['cur_tag_close'] = '</a></li>';
-		$config['num_tag_open'] = '<li>';
-		$config['num_tag_close'] = '</li>';
-		$config['last_tag_open'] = '<li class="arrow">';
-		$config['last_link'] = 'Last';
-		$config['last_tag_close'] = '</li>';
-
-		$this->pagination->initialize($config);
-		$page = $config['per_page'];
-		$segment = $this->uri->segment($segment);
-
-		return array(
-			"page" => $page,
-			"segment" => $segment
-		);
-	}
 
 
 	/**
-	 * This function used to load user sessions
+	 * 
+	 * Preleva i dati dalla sessione
 	 */
 	public function datas()
 	{
@@ -452,8 +368,11 @@ class BaseController extends MY_Controller
 	}
 
 
+
 	/**
-	 * This function insert into log to the log table
+	 * Registra un log di attivita
+	 * @param string $process 
+	 * @param string $processFunction 
 	 */
 	public function logrecord($process, $processFunction)
 	{
@@ -493,6 +412,7 @@ class BaseController extends MY_Controller
 
 
 	/**
+	 * 
 	 * Ritorna le estensioni ammesse per l'upload
 	 * @return array 
 	 */
@@ -514,7 +434,7 @@ class BaseController extends MY_Controller
 	 * @param mixed $entryId
 	 */
 	public function caricaAllegato($moduleName, $entryId)
-	{;
+	{
 		$msgErr = "";
 		$illegalChar = "èéà°ùòç#$%^&*ì£()+=-[]';,/\{}|:<>!?~";
 		$illegalChar .= '"';
@@ -574,7 +494,6 @@ class BaseController extends MY_Controller
 				}
 			}
 
-			//if (preg_match('/[^a-zA-Z\d]/',  pathinfo($allegato["name"], PATHINFO_FILENAME))) {
 			if (strpbrk(pathinfo($allegato["name"], PATHINFO_FILENAME), $illegalChar) == TRUE) {
 				$msgErr .= "Il File <b>" . $allegato["name"] . "</b> contiene caratteri speciali non consentiti per il caricamento.<BR>";
 			} else {
@@ -755,6 +674,7 @@ class BaseController extends MY_Controller
 
 
 	/**
+	 * 
 	 * Metodo JSON per il caricamento via ajax della griglia datatable
 	 */
 	public function json()
@@ -781,12 +701,13 @@ class BaseController extends MY_Controller
 			}
 		}
 
-		//print'<pre>';print_r($_REQUEST);
 		echo $this->modelClassModule->json($searchFilter);
 	}
 
 
+
 	/**
+	 * 
 	 * Carica i dati per un form - SOLA LETTURA 
 	 * @param mixed $id
 	 */
@@ -830,7 +751,10 @@ class BaseController extends MY_Controller
 
 
 	/**
+	 * 
 	 * Carica i dati per un form - INSERIMENTO
+	 * @param string $winForm
+	 * 
 	 */
 	public function createAjax(String $winForm = "FALSE")
 	{
@@ -875,20 +799,20 @@ class BaseController extends MY_Controller
 		$data['allegati'] = array();
 		$data['winForm'] = $winForm;
 		$data['extAdmitted'] = $this->loadExtAdmitted();
-		//print'<pre>';print_r($data);die();
 
 		$this->load->view($this->mod_name . '/' . $this->mod_name . '_form_ajax', $data);
 	}
 
 
 	/**
+	 * 
+	 * Pulisce i dati nel REQUEST
 	 * @param mixed $request
 	 * @return array
 	 */
 	private function sanitizeRequest($request)
 	{
 		$fieldsDetails = $this->modelClassModule->getFieldsDetails();
-		//print'<pre>';print_r($fieldsDetails);
 		foreach ($request as $property => $value) {
 			if (isset($fieldsDetails[$property])) {
 				$data_type = $fieldsDetails[$property]['DATA_TYPE'];
@@ -910,7 +834,9 @@ class BaseController extends MY_Controller
 
 
 	/**
+	 * 
 	 * Esegue l'inserimento del modulo in modalita insert
+	 * @param string $winForm
 	 */
 	public function create_action(String $winForm = "FALSE")
 	{
@@ -951,7 +877,6 @@ class BaseController extends MY_Controller
 			}
 
 			$data = array();
-			//print'<pre>';print_r($this->formFields);die();
 			$fieldsArrayGrid = $this->modelClassModule->getFieldsArrayGrid();
 			foreach ($this->formFields as $key => $property) {
 				if (isset($fieldsDetails[$property])) {
@@ -1046,9 +971,13 @@ class BaseController extends MY_Controller
 
 
 	/**
+	 * 
 	 * Carica i dati per un form - MODIFICA
 	 * @param mixed $id
 	 * @param mixed|null $afterSave
+	 * @param string $winForm
+	 * @param bool $validation_failed
+	 * 
 	 */
 	public function updateAjax($id, $afterSave = null, String $winForm = "FALSE", $validation_failed = FALSE)
 	{
@@ -1080,7 +1009,6 @@ class BaseController extends MY_Controller
 		} else {
 			$row = $this->modelClassModule->get_by_id($id);
 		}
-		//print'<pre>';print_r($row);
  
 		$formFieldsReferenced =  $this->getFormFieldsReferenced();
 		$formFieldsReferencedTableRef =  $this->getFormFieldsReferencedTableRef();
@@ -1095,7 +1023,6 @@ class BaseController extends MY_Controller
 		if ($row) {
 			$data = array();
 
-			//print'<pre>';print_r($this->custom_form_data_functions);
 			//ESEGUO EVENTUALI FUNZIONI AGGIUNTIVE PER CUSTOMIZZARE IL VETTORE $data
 			foreach ($this->custom_form_data_functions as $keyData => $function) {
 				$data[$keyData] = $function($id);
@@ -1142,28 +1069,13 @@ class BaseController extends MY_Controller
 					if (isset($arrayColumns['where_condition'])) {
 						$where_condition =  $arrayColumns['where_condition'];
 					}
-					//echo $where_condition."<br>";
 					$data[$property . '_refval'] = $this->modelClassModule->getValuesByFk($formFieldsReferencedTableRef[$property], $arrayColumns['id'], $arrayColumns['nome'], $where_condition);
 				}
 			}
 
 
+			//CARICO LE MASTER DETAILS
 			foreach ($this->masterDetailsLoadFuncList as $key => $masterDetailsLoadFunc) {
-				//VERIFICO SE HA I PRIVILEGI SE NON AMMINISTRATORE
-				/*
-				if (!$this->isAdmin()) {
-					$res = $this->modelClassModule->getPermissionRoleTabs($_SESSION['role'], $this->mod_name, $masterDetailsLoadFunc['function']);
-					if ((int)$res[0]['have_tab_perm'] > 0) {
-						$function = $masterDetailsLoadFunc['function'];
-						$data['master_details_list'][] = array("title" => $masterDetailsLoadFunc['title'], "id" => $masterDetailsLoadFunc['id'], "function" => $this->$function($id));
-					}
-				} else {
-					$function = $masterDetailsLoadFunc['function'];
-					$data['master_details_list'][] = array("title" => $masterDetailsLoadFunc['title'], "id" => $masterDetailsLoadFunc['id'], "function" => $this->$function($id));
-				}
-				*/
-
-				//DISABILITATO AL MOMENTO CONTROLLO SE ADMIN O NO O SE HA I RELATIVI PERMESSI SUI TAB. DA IMPLEMENTARE IN FUTURO
 				$function = $masterDetailsLoadFunc['function'];
 				$data['master_details_list'][] = array("title" => $masterDetailsLoadFunc['title'], "id" => $masterDetailsLoadFunc['id'], "function" => $this->$function($id));
 
@@ -1188,14 +1100,15 @@ class BaseController extends MY_Controller
 	}
 
 
+
 	/**
+	 * 
 	 * Esegue l'inserimento del modulo in modalita update
 	 */
 	public function update_action()
 	{
 		$_REQUEST = $this->sanitizeRequest($_REQUEST);
 		$_POST = $this->utilities->upperCaseRequest($_POST);
-		//print'<pre>';print_r($_POST);die();
 
 		$fieldsDetails = $this->modelClassModule->getFieldsDetails();
 		$this->_rules();
@@ -1232,8 +1145,6 @@ class BaseController extends MY_Controller
 				}
 			}
 
-			//print'<pre>';print_r($this->formFields);
-			//print'<pre>';print_r($_REQUEST);
 
 			$data = array();
 			$fieldsArrayGrid = $this->modelClassModule->getFieldsArrayGrid();
@@ -1403,18 +1314,13 @@ class BaseController extends MY_Controller
 
 
 
-	public function get_spaiker_cr_gnu_test()
-	{
-	}
-
 
 	/**
+	 * 
 	 * Validazione campi
 	 * Il metodo viene overridato in ogni modulo
 	 */
-	public function _rules()
-	{
-	}
+	public function _rules(){}
 
 
 
@@ -1426,10 +1332,13 @@ class BaseController extends MY_Controller
 
 
 	/**
+	 * 
 	 * Setta i nomi dei campi utilizzati nella griglia e nel form
 	 * @param string $fieldName
 	 * @param mixed|null $tableNameReferenced
 	 * @param mixed|null $arrayColumns
+	 * @param mixed|null $where_condition
+	 * @param mixed|null $filter_slave_id
 	 */
 	protected function setFormFields(String $fieldName, $tableNameReferenced = NULL, $arrayColumns = NULL, $where_condition = NULL, $filter_slave_id = NULL)
 	{
@@ -1458,6 +1367,7 @@ class BaseController extends MY_Controller
 
 
 	/**
+	 * 
 	 * Restituisce l'elenco dei campi referenziati su altra tabella nel form/modulo
 	 * @return array
 	 */
@@ -1497,6 +1407,7 @@ class BaseController extends MY_Controller
 
 
 	/**
+	 * 
 	 * Setta per il campo referenziato la relativa tabella dei riferimento
 	 * @param mixed $formFieldsReferenced
 	 * @param mixed $tableNameReferenced
@@ -1521,9 +1432,10 @@ class BaseController extends MY_Controller
 	/**
 	 * 
 	 * Ritorna le colonne chiave/valore di una tabella referenziata
-	 * @param mixed $tableNameReferenced
 	 * @param mixed $table_referenced
-	 *  @param mixed $id
+	 * @param mixed $id
+	 * @param mixed $VALUE
+	 * @param mixed/null $where_condition
 	 */
 	public function getKeyValuesFromTable($table_referenced, $id = "id", $value = "id", $where_condition = NULL)
 	{
@@ -1537,9 +1449,6 @@ class BaseController extends MY_Controller
 	/**
 	 * 
 	 * Ritorna le colonne chiave/valore di una tabella referenziata
-	 * @param mixed $tableNameReferenced
-	 * @param mixed $table_referenced
-	 *  @param mixed $id
 	 */
 	public function getKeyValuesFromTableViaPOST()
 	{
@@ -1583,6 +1492,7 @@ class BaseController extends MY_Controller
 	}
 
 
+
 	/**
 	 * 
 	 * Salvo i dati della master details 
@@ -1609,14 +1519,6 @@ class BaseController extends MY_Controller
 						}
 					}
 
-					/*
-					if(is_string($value)){
-						$data[$key] = mb_strtoupper($value);
-					} else {
-						$data[$key] = $value;
-					}
-					*/
-
 					$data[$key] = $value;
 				}
 			}
@@ -1637,7 +1539,7 @@ class BaseController extends MY_Controller
 		unset($data['entryID']);
 		unset($data['entryIDMasterDetails']);
 		unset($data['saveType']);
-		//print'<pre>';print_r($data);die();
+
 
 		if ($action == 'insert') {
 			if ($saveType == 'form') {
@@ -1716,12 +1618,13 @@ class BaseController extends MY_Controller
 	}
 
 
+
 	/**
+	 * 
 	 * Cancella un record in una master details
 	 * @param mixed $id_row_master_details
 	 * @param mixed $id
 	 * @param mixed $table
-	 * @param mixed $masterDetailsLoadFunc
 	 */
 	public function delete_row_master_details($id_row_master_details, $id, $table)
 	{
@@ -1761,6 +1664,9 @@ class BaseController extends MY_Controller
 	/**
 	 * 
 	 * Cancellazione massiva records
+	 * @param mixed $id
+	 * @param array $entry_list
+	 * @param mixed $table
 	 */
 	public function delete_massive_master_details($id, $entry_list, $table)
 	{
@@ -1860,6 +1766,8 @@ class BaseController extends MY_Controller
 	/**
 	 * Aggiunge per il modulo le funzioni per il caricamento delle  master details
 	 * @param string $masterDetailsLoadFunc
+	 * @param string/null $masterDetailsTitle
+	 * @param string/null $masterDetailsID
 	 */
 	protected function addMasterDetailsLoadFunc(String $masterDetailsLoadFunc, String $masterDetailsTitle = NULL, String $masterDetailsID = NULL)
 	{
@@ -1931,52 +1839,12 @@ class BaseController extends MY_Controller
 	}
 
 
+
+
 	/**
 	 * 
+	 * Invia una email con allegato
 	 */
-	protected function genTableDataFromRows(array $rows, $id, String $pkField = NULL, $tableName = NULL, array $columns = NULL)
-	{
-		if ($pkField == NULL) {
-			$pkField = 'id';
-		}
-
-		$columns_array = array_keys($rows);
-
-		$html = "";
-		$html .= '<table class="TFtable" id="' . $tableName . '" style="font-size:12px">
-					<tbody>
-						<tr>';
-		foreach ($columns_array as $key => $colname) {
-			$html = '		<td style="width:10%">' . $colname . '</td>';
-		}
-		$html .= '			<td style="width:10%">Modifica</td>
-							<td style="width:10%">Elimina</td>
-						</tr>';
-
-		$hiddenSet = FALSE;
-		foreach ($rows as $key => $value) {
-			$html .= "<tr>";
-
-			foreach ($columns_array as $key => $colname) {
-				$html .= "<td>";
-				if ($hiddenSet == FALSE) {
-					$html .= "<input type='hidden' id='id[]' name='id[]' value='" . $value[$pkField] . "'>";
-					$hiddenSet = TRUE;
-				}
-				$html .= $value[$colname];
-				$html .= "</td>";
-			}
-
-
-			$html .= "<td><a style='cursor:pointer' class='btn btn-sm btn-info' onclick ='winFormMasterDetails(\"" . $value[$pkField] . "\",\"" . $value[$pkField] . "\")' title='Modifica'><i class='fa fa-edit'></a></td>";
-			$html .= "<td><a style='cursor:pointer' class='btn btn-sm btn-danger deleteUser' onclick ='deleteMasterDetails(\"" . $value[$pkField] . "\", \"" . $id . "\", \"mod_affiliazioni\",\"_mod_affiliazioni_discipline\",\"getMasterDetail__mod_affiliazioni_discipline\",\"dv__mod_affiliazioni_discipline\")' title='Elimina'><i class='fa fa-trash'></a></td>";
-			$html .= "</tr>";
-		}
-		$html .= '</tbody></table>';
-	}
-
-
-
 	public function sendMailWithAttach(){
 		$module= $_REQUEST['module'];
 		$email = $_REQUEST['email'];
@@ -2022,8 +1890,6 @@ class BaseController extends MY_Controller
 		$email->From      = $this->config->item('smtp_sender');
 		$email->FromName  = $company_name;
 
-		//$email->setFrom('no-reply@'.$email_explode[1], $company_name); 
-		//$email->addReplyTo('no-reply@'.$email_explode[1], 'Information'); 
 		$ccMail = $company_email;
 		if($company_email_send_comunication1 != ""){
 			$ccMail = $company_email_send_comunication1;
@@ -2046,6 +1912,7 @@ class BaseController extends MY_Controller
 	}	
 
 
+
 	//
 	//
 	//[STAMPE]
@@ -2057,6 +1924,7 @@ class BaseController extends MY_Controller
 	 * Stampa di un modulo
 	 * Stampa a video, richiamando il metodo stampa_out e salva sul server
 	 * @param mixed $id
+	 * 
 	 */
 	public function stampa($id)
 	{
@@ -2079,6 +1947,7 @@ class BaseController extends MY_Controller
 
 
 	/**
+	 * 
 	 * Stampa generica di un modulo
 	 * Per le stampe ad-hoc, bisogna reimplentare il metodo o fare metodi su misura per la stampa
 	 * Deve sempre ritornare un file stream pdf per il salvataggio sul server
@@ -2156,7 +2025,12 @@ class BaseController extends MY_Controller
 	}
 
 
-
+	/**
+	 * 
+	 * Scarica un'Excel dato il nome di una tabella
+	 * @param mixed $table
+	 * @param mixed/null $id	 
+	 */
 	public function excel($table, $id = NULL)
 	{
 		$this->load->helper('exportexcel');
@@ -2195,6 +2069,163 @@ class BaseController extends MY_Controller
 	}
 
 
-
  
+	/**
+	 * 
+	 * @deprecated
+	 * Con dati in input di tipo MIXED e di tipo status code crea la risposta
+	 * @param array|NULL $data
+	 *        	Data to output to the user
+	 *        	running the script; otherwise, exit
+	 */
+	public function response($data = NULL)
+	{
+		$this->output->set_status_header(200)->set_content_type('application/json', 'utf-8')->set_output(json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES))->_display();
+		exit();
+	}
+
+
+
+	/**
+	 * 
+	 * @deprecated
+	 * Verifica se il ruolo con cui si è autenticati è di tipo ADMIN o MANAGER
+	 */
+	public function isManagerOrAdmin()
+	{
+		if ($this->role == ROLE_ADMIN || $this->role == ROLE_MANAGER) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+
+
+	/**
+	 * 
+	 * @deprecated
+	 * Ritorna lo stato dell' utente
+	 */
+	public function getUserStatus()
+	{
+		$this->datas();
+		$status = $this->user_model->getUserStatus($this->vendorId);
+		if ($status->status == 0) {
+			return true;
+		} else {
+			return false;
+		}
+	}	
+
+
+
+	/**
+	 * 
+	 * @deprecated
+	 * Reindirizzamento alla pagina di accesso non autorizzato
+	 */
+	public function accesslogincontrol()
+	{
+		$process = 'accesslogincontrol';
+		$processFunction = 'Admin/accesslogincontrol';
+		$this->logrecord($process, $processFunction);
+		redirect(noaccess);
+	}
+
+
+
+	/**
+	 * 
+	 * @deprecated
+	 * This function used provide the pagination resources
+	 * @param {string} $link : This is page link
+	 * @param {number} $count : This is page count
+	 * @param {number} $perPage : This is records per page limit
+	 * @return {mixed} $result : This is array of records and pagination data
+	 */
+	public function paginationCompress($link, $count, $perPage = 10, $segment = SEGMENT)
+	{
+		$this->load->library('pagination');
+
+		$config['base_url'] = base_url() . $link;
+		$config['total_rows'] = $count;
+		$config['uri_segment'] = $segment;
+		$config['per_page'] = $perPage;
+		$config['num_links'] = 5;
+		$config['full_tag_open'] = '<nav><ul class="pagination">';
+		$config['full_tag_close'] = '</ul></nav>';
+		$config['first_tag_open'] = '<li class="arrow">';
+		$config['first_link'] = 'First';
+		$config['first_tag_close'] = '</li>';
+		$config['prev_link'] = 'Previous';
+		$config['prev_tag_open'] = '<li class="arrow">';
+		$config['prev_tag_close'] = '</li>';
+		$config['next_link'] = 'Next';
+		$config['next_tag_open'] = '<li class="arrow">';
+		$config['next_tag_close'] = '</li>';
+		$config['cur_tag_open'] = '<li class="active"><a href="#">';
+		$config['cur_tag_close'] = '</a></li>';
+		$config['num_tag_open'] = '<li>';
+		$config['num_tag_close'] = '</li>';
+		$config['last_tag_open'] = '<li class="arrow">';
+		$config['last_link'] = 'Last';
+		$config['last_tag_close'] = '</li>';
+
+		$this->pagination->initialize($config);
+		$page = $config['per_page'];
+		$segment = $this->uri->segment($segment);
+
+		return array(
+			"page" => $page,
+			"segment" => $segment
+		);
+	}	
+
+
+	
+	/**
+	 * @deprecated
+	 */
+	protected function genTableDataFromRows(array $rows, $id, String $pkField = NULL, $tableName = NULL, array $columns = NULL)
+	{
+		if ($pkField == NULL) {
+			$pkField = 'id';
+		}
+
+		$columns_array = array_keys($rows);
+
+		$html = "";
+		$html .= '<table class="TFtable" id="' . $tableName . '" style="font-size:12px">
+					<tbody>
+						<tr>';
+		foreach ($columns_array as $key => $colname) {
+			$html = '		<td style="width:10%">' . $colname . '</td>';
+		}
+		$html .= '			<td style="width:10%">Modifica</td>
+							<td style="width:10%">Elimina</td>
+						</tr>';
+
+		$hiddenSet = FALSE;
+		foreach ($rows as $key => $value) {
+			$html .= "<tr>";
+
+			foreach ($columns_array as $key => $colname) {
+				$html .= "<td>";
+				if ($hiddenSet == FALSE) {
+					$html .= "<input type='hidden' id='id[]' name='id[]' value='" . $value[$pkField] . "'>";
+					$hiddenSet = TRUE;
+				}
+				$html .= $value[$colname];
+				$html .= "</td>";
+			}
+
+
+			$html .= "<td><a style='cursor:pointer' class='btn btn-sm btn-info' onclick ='winFormMasterDetails(\"" . $value[$pkField] . "\",\"" . $value[$pkField] . "\")' title='Modifica'><i class='fa fa-edit'></a></td>";
+			$html .= "<td><a style='cursor:pointer' class='btn btn-sm btn-danger deleteUser' onclick ='deleteMasterDetails(\"" . $value[$pkField] . "\", \"" . $id . "\", \"mod_affiliazioni\",\"_mod_affiliazioni_discipline\",\"getMasterDetail__mod_affiliazioni_discipline\",\"dv__mod_affiliazioni_discipline\")' title='Elimina'><i class='fa fa-trash'></a></td>";
+			$html .= "</tr>";
+		}
+		$html .= '</tbody></table>';
+	}
+
+
 }
