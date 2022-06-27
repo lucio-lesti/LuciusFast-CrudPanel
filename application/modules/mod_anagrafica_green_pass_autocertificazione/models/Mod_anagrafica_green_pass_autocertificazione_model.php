@@ -23,8 +23,6 @@ class Mod_anagrafica_green_pass_autocertificazione_model extends BaseModel
 
 		$this->setFieldArrayGrid('fk_anagrafica',FIELD_NUMERIC,'mod_anagrafica',array("id" => 'id', "nome" => array("nome"," ","cognome"," ' - ' ","codfiscale") ),'mod_anagrafica_nome');
 		$this->setFieldArrayGrid('data_autocertificazione_fine_validita', FIELD_DATE);
-		$this->setFieldArrayGrid('documento_upload', FIELD_BLOB);
-		$this->setFieldArrayGrid('nome_documento', FIELD_STRING);
 		$this->setFieldArrayGrid('id', FIELD_NUMERIC);
 
 		//ESEMPIO DI TABELLA REFERENZIATA CHE NON HA IL CAMPO 'NOME'. QUI INDICHIAMO AL PROGRAMMA QUALE E' IL CAMPO DA USARE COME CAMPO 'NOME'
