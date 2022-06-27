@@ -421,39 +421,37 @@ Class Utilities{
 		$day = $arrayDayHour[0];
 		$HourMin = $arrayDayHour[1];	
 
-		/*
-		echo $dateEN;
-		print'<pre>';print_r($dateArray);	
-		print'<pre>';print_r($arrayDayHour);	
-		*/
-
+ 
 		$dateIT = $day."/".$month."/".$year." ".$HourMin;
-		/*
-		echo $dateIT;
-		die();
-		*/
 		
 		return $dateIT;
 	}
 
 
+
+	/**
+	 * 
+	 * Verifica se una data è maggiore di un'altra
+	 * @param mixed $dateFromIT
+	 * @param mixed $dateToIT
+	 */
 	public function check_date_greater_then($dateFromIT, $dateToIT){
-		//echo $dateFrom;
-		//echo " - ".$dateTo;
 		$dateFrom = $this->convertToDateEN($dateFromIT);
-		$dateTo = $this->convertToDateEN($dateToIT);
-		//echo $dateFrom;
-		//echo " - ".$dateTo;		
+		$dateTo = $this->convertToDateEN($dateToIT);	
 		if($dateFrom > $dateTo){
-			//echo "(DATE FROM BIGGER)";
 			return false;
 		} else {
-			//echo "(DATE to BIGGER)";
 			return true;
 		}
 	}
 
 
+
+	/**
+	 * 
+	 * Verifica se una data ora è valida
+	 * @param mixed $str
+	 */	
 	public function validate_hour($str) {
 		$checked = false;
 		if (preg_match('/^\d{2}:\d{2}$/', $str)) {
@@ -466,9 +464,12 @@ Class Utilities{
 	}
 
 
+
 	/**
+	 * 
 	 * Verifica se un persone è maggiorenne
 	 * @param mixed $dataNascita
+	 * @param mixed/null $limitAge
 	 */
 	public function check_minorenne($dataNascitaIT, $limitAge = NULL){
 		if($limitAge == NULL){
@@ -488,11 +489,12 @@ Class Utilities{
 	/**
 	 * 
 	 * ritorna i valori in upper case nel request 
+	 * @param mixed $request
+	 * 
 	 */
 	public function upperCaseRequest($request){
 		$return = array();
 		foreach($request as $key => $req){
-			//print'<pre>';print_r($req);
 			if(is_array($req)){
 				$return[$key] = $req;
 			} else {
@@ -551,6 +553,7 @@ Class Utilities{
  
 	}
 
+
 	/**
 	 * 
 	 *  Restituisce un'array di elementi anno-mese
@@ -574,9 +577,15 @@ Class Utilities{
 	}
 
 
+
+	/**
+	 * 
+	 *  Restituisce il mese in italiano dato un numero
+	 * 	@param int $number
+	 * 
+	 */
 	public function getItalianMonthFromNumber($number){
 		$ita_month = "";
-		//echo "number:".$number."<br>";
 		switch($number){
 			case 1:
 			case '1':
@@ -657,9 +666,15 @@ Class Utilities{
 	}
 
 
+
+	/**
+	 * 
+	 *  Restituisce un numero dato il mese in italiano 
+	 * 	@param string $ita_month
+	 * 
+	 */	
 	public function getMonthNumberFromItalianMonth($ita_month){
 		$number = "";
-		//echo "number:".$number."<br>";
 		switch($number){
 
 			case "GENNAIO":
