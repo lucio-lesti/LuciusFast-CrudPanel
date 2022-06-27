@@ -15,9 +15,7 @@ class Mod_anagrafica_model extends BaseModel
 		$this->mod_name = 'mod_anagrafica';
 
 
-		//NOTE:NELLA FUNZIONE 'setFieldArrayGrid' INDICARE NEL VETTORE CHE SI COLLEGA ALLA TABELLA REFERENZIATA
-		//ALLA CHIAVE 'NOME', IL NOMINATIVO DEL CAMPO COLLEGATO
-
+		/*** INIZIALIZZAZIONE CAMPI GRIGLIA, SETTIAMO OLTRE AL TIPO I PARAMETRI DI CONNESSIONE A TABELLA NEL CASO DI COMBO***/	
 		$this->setFieldArrayGrid('anagrafica_attributo', FIELD_STRING);
 		$this->setFieldArrayGrid('cellulare', FIELD_STRING);
 		$this->setFieldArrayGrid('codfiscale', FIELD_STRING);
@@ -27,7 +25,9 @@ class Mod_anagrafica_model extends BaseModel
 		$this->setFieldArrayGrid('nome_documento', FIELD_STRING);
 		$this->setFieldArrayGrid('documento', FIELD_BLOB);
 		$this->setFieldArrayGrid('email', FIELD_STRING);
-		$this->setFieldArrayGrid('fk_comune_nascita',FIELD_NUMERIC,'mod_comuni',array("id" => 'istat', "nome" => 'comune'));
+
+
+		$this->setFieldArrayGrid('fk_comune_nascita',FIELD_NUMERIC,'mod_comuni',array("id" => 'istat', "nome" => 'comune'));		
 		$this->setFieldArrayGrid('fk_comune_residenza',FIELD_NUMERIC,'mod_comuni',array("id" => 'istat', "nome" => 'comune'));
 		$this->setFieldArrayGrid('fk_tutore',FIELD_NUMERIC,'anagrafica_v',array("id" => 'id_anagrafica_v', "nome" => array("nome_anagrafica_v"," ","cognome_anagrafica_v"," ' - ' ","codfiscale_anagrafica_v") ),'grd_tutore',"LEFT");
 		$this->setFieldArrayGrid('img_foto', FIELD_BLOB_IMG);

@@ -22,6 +22,9 @@ class Mod_anagrafica extends BaseController
 		$this->viewName_FormROAjax = 'mod_anagrafica_read_ajax';
 		$this->viewName_FormAjax = 'mod_anagrafica_form_ajax';
 
+
+		/*** CUSTOMIZZAZIONE ERRORI MYSQL PER MODULO***/	
+
 		$this->MsgDBConverted['insert']['error']['1062'] = "Esiste gia questo elemento per il modulo Anagrafica";
 		$this->MsgDBConverted['insert']['error']['1452'] = "Esiste gia questo elemento per il modulo Anagrafica";
 		$this->MsgDBConverted['update']['error']['1062'] = "Esiste gia questo elemento per il modulo Anagrafica";
@@ -30,8 +33,9 @@ class Mod_anagrafica extends BaseController
 		$this->MsgDBConverted['insert_massive']['error']['1452'] = "Esiste gia questo elemento per il modulo Anagrafica";
 		$this->MsgDBConverted['update_massive']['error']['1062'] = "Esiste gia questo elemento per il modulo Anagrafica";
 		$this->MsgDBConverted['update_massive']['error']['1452'] = "Esiste gia questo elemento per il modulo Anagrafica";
-		//$this->MsgDBConverted['delete']['error']['1217'] = "Impossibile eliminare questo elemento del modulo Anagrafica. E' usato nei seguenti moduli:";
-		//$this->MsgDBConverted['delete_massive']['error']['1217'] = "Impossibile eliminare alcuni elementi del modulo Anagrafica. Sono usati nei seguenti moduli:";
+
+
+		/*** INIZIALIZZAZIONE CAMPI FORM***/	
 
 		//NOTE:NELLA FUNZIONE 'setFormFields' INDICARE NEL VETTORE CHE SI COLLEGA ALLA TABELLA REFERENZIATA
 		//ALLA CHIAVE 'NOME', IL NOMINATIVO DEL CAMPO COLLEGATO
@@ -51,12 +55,15 @@ class Mod_anagrafica extends BaseController
 		$this->setFormFields('firma');
 		$this->setFormFields('nome_img_firma');
 
+
 		//NON SI PUO ESSERE TUTORI DI SE STESSO
 		$where_condition = " WHERE TIMESTAMPDIFF(YEAR, datanascita, CURDATE()) >= 18";
 		if ($this->pkIdValue != NULL) {
 			$where_condition .= " AND id <> " . $this->pkIdValue;
 		}
 		$this->setFormFields('fk_tutore', 'mod_anagrafica', array("id" => 'id', "nome" => 'CONCAT(nome," ",cognome," ", codfiscale)'), $where_condition); 
+
+
 
 		$this->setFormFields('img_foto');
 		$this->setFormFields('indirizzo');
@@ -67,8 +74,9 @@ class Mod_anagrafica extends BaseController
 		$this->setFormFields('telefono');
 		$this->setFormFields('id');
 
+
 		
-		//RICHIAMO LE FUNZIONI PER LA CREAZIONI DELLE MASTER DETAILS
+		//*** RICHIAMO LE FUNZIONI PER LA CREAZIONI DELLE MASTER DETAILS **/
 		$this->addMasterDetailsLoadFunc('getMasterDetail_mod_anagrafica_certificati_medici', 'Certificati medici', 'getMasterDetail_mod_anagrafica_certificati_medici');
 		$this->addMasterDetailsLoadFunc('getMasterDetail_mod_anagrafica_corsi', 'Corsi Frequentati da alunno', 'getMasterDetail_mod_anagrafica_corsi');
 		$this->addMasterDetailsLoadFunc('getMasterDetail_mod_anagrafica_tessere_assoc', 'Storico Tessere', 'getMasterDetail_mod_anagrafica_tessere_assoc');
