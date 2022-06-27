@@ -18,12 +18,7 @@ class Mod_comuni_model extends BaseModel
 
 		//NOTE:NELLA FUNZIONE 'setFieldArrayGrid' INDICARE NEL VETTORE CHE SI COLLEGA ALLA TABELLA REFERENZIATA
 		//ALLA CHIAVE 'NOME', IL NOMINATIVO DEL CAMPO COLLEGATO
-
-		$this->setFieldArrayGrid('abitanti', FIELD_NUMERIC);
 		$this->setFieldArrayGrid('cap', FIELD_STRING);
-		$this->setFieldArrayGrid('codfisco', FIELD_STRING);
-		$this->setFieldArrayGrid('codice_provincia', FIELD_STRING);
-		$this->setFieldArrayGrid('codice_regione', FIELD_STRING);
 		$this->setFieldArrayGrid('comune', FIELD_STRING);
 		$this->setFieldArrayGrid('prefisso', FIELD_STRING);
 		$this->setFieldArrayGrid('istat', FIELD_NUMERIC);
