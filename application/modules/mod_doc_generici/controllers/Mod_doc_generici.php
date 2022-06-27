@@ -1,8 +1,9 @@
 <?php
-if (!defined('BASEPATH')){
+if (!defined('BASEPATH')) {
 	exit('No direct script access allowed');
 }
 require APPPATH . '/libraries/BaseController.php';
+
 use Dompdf\Dompdf;
 
 class Mod_doc_generici extends BaseController
@@ -38,8 +39,6 @@ class Mod_doc_generici extends BaseController
 		$this->setFormFields('nome');
 		$this->setFormFields('tipo_doc');
 		$this->setFormFields('id');
-
-
 	}
 
 
@@ -52,7 +51,5 @@ class Mod_doc_generici extends BaseController
 
 		$this->form_validation->set_rules('id', 'id', 'trim');
 		$this->form_validation->set_error_delimiters('<span class="text-danger">', '</span>');
-
 	}
-
 }
