@@ -56,7 +56,7 @@ class Mod_anagrafica extends BaseController
 		if ($this->pkIdValue != NULL) {
 			$where_condition .= " AND id <> " . $this->pkIdValue;
 		}
-		$this->setFormFields('fk_tutore', 'mod_anagrafica', array("id" => 'id', "nome" => 'CONCAT(nome," ",cognome," ", codfiscale)'), $where_condition); //OK
+		$this->setFormFields('fk_tutore', 'mod_anagrafica', array("id" => 'id', "nome" => 'CONCAT(nome," ",cognome," ", codfiscale)'), $where_condition); 
 
 		$this->setFormFields('img_foto');
 		$this->setFormFields('indirizzo');
@@ -67,14 +67,17 @@ class Mod_anagrafica extends BaseController
 		$this->setFormFields('telefono');
 		$this->setFormFields('id');
 
-		//print'<pre>';print_r($_REQUEST);
-
-
+		
+		//RICHIAMO LE FUNZIONI PER LA CREAZIONI DELLE MASTER DETAILS
 		$this->addMasterDetailsLoadFunc('getMasterDetail_mod_anagrafica_certificati_medici', 'Certificati medici', 'getMasterDetail_mod_anagrafica_certificati_medici');
 		$this->addMasterDetailsLoadFunc('getMasterDetail_mod_anagrafica_corsi', 'Corsi Frequentati da alunno', 'getMasterDetail_mod_anagrafica_corsi');
 		$this->addMasterDetailsLoadFunc('getMasterDetail_mod_anagrafica_tessere_assoc', 'Storico Tessere', 'getMasterDetail_mod_anagrafica_tessere_assoc');
  
+
 		
+		/*** FUNZIONI LAMBDA RICHIAMATE NEI METODI createAjax, updateAjax, AL SALVATAGGIO DEL FORM  - INIZIO **/
+		 
+
 		//VERIFICO SE LA PERSONA SIA MINORENNE
 		$this->custom_operations_list['check_minorenne'] = function ($request, $id = NULL) {
 			$ret = $this->utilities->check_minorenne($request['datanascita']);
@@ -86,15 +89,16 @@ class Mod_anagrafica extends BaseController
 			} 
 		};
 
+
 		//PRELEVO IL NOME DEL DOCUMENTO CARICATO
 		$this->custom_operations_list['get_nome_documento'] = function ($request, $id = NULL) {
 			$_POST['nome_documento'] = $_FILES['documento']['name'];
 		};
 		
 
-		//PRELEVO LA FOTO
+
+		//PRELEVO LA FOTO DEL PROFILO
 		$this->custom_operations_list['get_foto'] = function ($request, $id = NULL) {
-			
 			if( !is_uploaded_file($_FILES['img_foto']['tmp_name'])) {
 				if($_REQUEST['img_foto_hidden'] != ""){
 					$this->utilities->saveBase64Image('data:image/png;base64,'.$_REQUEST['img_foto_hidden'],FCPATH.'uploads/anagrafiche',"img_".$id.".jpg");
@@ -126,8 +130,8 @@ class Mod_anagrafica extends BaseController
 		};
 	
 
+		//PRELEVO LA FIRMA AL SALVATAGGIO DEL FORM
 		$this->custom_operations_list['get_firma'] = function ($request, $id = NULL) {
- 
 			if( !is_uploaded_file($_FILES['firma']['tmp_name'])) {
 				if($_REQUEST['firma_hidden'] != ""){
 					$this->utilities->saveBase64Image('data:image/png;base64,'.$_REQUEST['firma_hidden'],FCPATH.'uploads/anagrafiche',"firma_".$id.".jpg");
@@ -164,8 +168,7 @@ class Mod_anagrafica extends BaseController
 		};
 		
 		
-		//SE NON ESENTANTO AGGIUNGI I TAB PER IL GREEN PASS	
- 
+		//IN BASE AGLI ATTRIBUTI, SE NON ESENTANTO AGGIUNGI I TAB PER IL GREEN PASS
 		$this->custom_rules_updateAjax['check_attributi'] = function ($id = NULL) {
 			if((isset($_REQUEST['recordID'])) || (isset($_REQUEST['id'])) || (isset($_REQUEST['entryID']))){
 				if(isset($_REQUEST['recordID'])){
@@ -183,7 +186,6 @@ class Mod_anagrafica extends BaseController
 
 				$sottopostoRegimeGP = $this->checkSottopostoRegimeGP($idAnagrafica);
 				if(($sottopostoRegimeGP == 'SI') ){
-					//$this->addMasterDetailsLoadFunc('getMasterDetail_mod_anagrafica_green_pass', 'Lista Green Pass', 'getMasterDetail_mod_anagrafica_green_pass');
 					$this->addMasterDetailsLoadFunc('getMasterDetail_mod_anagrafica_green_pass_autocertificazione', 'Lista autocertificazioni Green pass', 'getMasterDetail_mod_anagrafica_green_pass_autocertificazione');
 				}
 				
@@ -199,34 +201,27 @@ class Mod_anagrafica extends BaseController
 		};
 	 
 
-		$this->custom_rules_reload_master_details['check_attributi'] = function ($id = NULL) {
-			//print'<pre>';print_r($id);die();
-			$sottopostoRegimeGP = $this->checkSottopostoRegimeGP($id);
-			if(($sottopostoRegimeGP == 'SI') ){
-				//$this->addMasterDetailsLoadFunc('getMasterDetail_mod_anagrafica_green_pass', 'Lista Green Pass', 'getMasterDetail_mod_anagrafica_green_pass');
-				$this->addMasterDetailsLoadFunc('getMasterDetail_mod_anagrafica_green_pass_autocertificazione', 'Lista autocertificazioni Green pass', 'getMasterDetail_mod_anagrafica_green_pass_autocertificazione');
-			}
-			
-	 
-			//SE LA PERSONA E' INSEGNANTE AGGIUNGO LA FUNZIONE PER I TABS INSEGNANTI
-			$attributiAnagrafica = $this->checkAttributo($id);
-			if(in_array("INSEGNANTE",$attributiAnagrafica)){
-				$this->addMasterDetailsLoadFunc('getMasterDetail_mod_corsi_insegnanti', 'Elenco corsi svolti da insegnante', 'getMasterDetail_mod_corsi_insegnanti');
-				$this->addMasterDetailsLoadFunc('getMasterDetail_mod_insegnanti_discipline', 'Elenco discipline da insegnante ', 'getMasterDetail_mod_insegnanti_discipline');	
-			}
-		};
-
-
 	}
 
 
+
+	/**
+	 * 
+	 * Genera tutore temporaneo in attesa di definire quello definitivo
+	 * @return json/string
+	 */
 	public function genTutore(){
 		$tutore = $this->modelClassModule->genTutore();
 		echo json_encode($tutore);
 	}
 
 
- 
+	/**
+	 * 
+	 *  Verifica gli attributi di un'anagrafica:se alunno,insegnante, direttivo
+	 *  @param mixed $id
+	 *  @return array
+	*/
 	public function checkAttributo($id)
 	{
 		$lista_attributi = $this->modelClassModule->checkAttributo($id);
@@ -234,6 +229,13 @@ class Mod_anagrafica extends BaseController
 	}
 
 
+
+	/**
+	 * 
+	 *  Verifica se un'anagrafica è sottoposto a green pass
+	 *  @param mixed $id
+	 *  @return string
+	*/	
 	public function checkSottopostoRegimeGP($id)
 	{
 		$sottopostoRegimeGP = $this->modelClassModule->checkSottopostoRegimeGP($id);
@@ -242,6 +244,7 @@ class Mod_anagrafica extends BaseController
 
 
 	/**
+	 * 
 	 * Funzione caricamento della master details, tabella _mod_anagrafica_certificati_medici
 	 * @param mixed $id
 	 * @param string $isAjax
@@ -252,20 +255,6 @@ class Mod_anagrafica extends BaseController
 		$row =  $this->modelClassModule->getMasterDetail_mod_anagrafica_certificati_medici($id, $isAjax);
 		$html = '';
 		$winFormType = "form"; //VALORI ACCETTATI: {'multi','form'}
-
-		if ($isAjax == 'FALSE') {
-			/*
-			if ($winFormType == "form") {
-				$html .= '
-							<br><a class="btn btn-primary" style="cursor:pointer" onclick="winFormMasterDetails(\'mod_anagrafica\',\'winMasterDetail_mod_anagrafica_certificati_medici\',\'insert\',' . $id . ',\'NULL\',\'Aggiungi Certificato medico\', arrayValidationFields,\'winMasterDetail_mod_anagrafica_certificati_medici\',\'form\',\'getMasterDetail_mod_anagrafica_certificati_medici\')">[ Aggiungi un elemento]</a><br>
-							<br><br>';
-			} else {
-				$html .= '
-						<br><a class="btn btn-primary" style="cursor:pointer" onclick="winFormMasterDetails(\'mod_anagrafica\',\'winMasterDetailMulti_mod_anagrafica_certificati_medici\',\'insert\',' . $id . ',\'NULL\',\'Aggiungi Certificato medico\', arrayValidationFields,\'winMasterDetailMulti_mod_anagrafica_certificati_medici\',\'multi\',\'getMasterDetail_mod_anagrafica_certificati_medici\')">[ Aggiungi un elemento]</a><br>
-						<br><br>';
-			}
-			*/
-		}
 		$html .= "<br><br><table class='TFtable' id='tbl_mod_anagrafica_certificati_medici' style='font-size:12px'>
 					<tr>
 						<thead>
@@ -277,10 +266,6 @@ class Mod_anagrafica extends BaseController
 		$html .= '<th>Data Certificato</th>';
 		$html .= '<th>Data Scadenza Certificato</th>';
 		$html .= '<th>Tipologia Certificato</th>';
-		if ($winFormType == "form") {
-			//$html .= '<th>Modifica</th>';
-		}
-		//$html .= '<th>Elimina</th>';
 		$html .= '</tr>';
 		$html .= '<tbody>';
 		foreach ($row as $key => $value) {
@@ -290,24 +275,17 @@ class Mod_anagrafica extends BaseController
 			$html .= "<td><input type='hidden' id='id[]' name='id[]' value='" . $value['id'] . "'>" . $this->utilities->convertToDateIT($value['data_certificato']) . "</td>";
 			$html .= "<td><input type='hidden' id='id[]' name='id[]' value='" . $value['id'] . "'>" . $this->utilities->convertToDateIT($value['data_scadenza']) . "</td>";
 			$html .= "<td><input type='hidden' id='id[]' name='id[]' value='" . $value['id'] . "'>" . $value['tipologia'] . "</td>";
-			if ($winFormType == "form") {
-				//$html .= "<td><a style='cursor:pointer' class='btn btn-sm btn-info' onclick ='winFormMasterDetails(\"mod_anagrafica\",\"winMasterDetail_mod_anagrafica_certificati_medici\",\"edit\", $id," . $value['id'] . ",\"MODIFICA Certificati medici Anagrafica \",arrayValidationFields,\"winMasterDetail_mod_anagrafica_certificati_medici\", \"form\",\"getMasterDetail_mod_anagrafica_certificati_medici\")' title='Modifica Certificati medici Anagrafica '><i class='fa fa-edit'></a></td>";
-			}
-			//$html .= "<td><a style='cursor:pointer' class='btn btn-sm btn-danger deleteUser' onclick ='deleteMasterDetails(" . $value['id'] . ", " . $id . ", \"mod_anagrafica\",\"_mod_anagrafica_certificati_medici\",\"getMasterDetail_mod_anagrafica_certificati_medici\")' title='Elimina'><i class='fa fa-trash'></a></td>";
 			$html .= '</tr>';
 		}
 		$html .= '</tbody></table>';
-		/*
-		$html .= '<br/><a class="btn btn-sm btn-danger deleteUser" id="btDeleteMass_mod_anagrafica_certificati_medici" name="btDeleteMass_mod_anagrafica_certificati_medici""
-					onclick="deleteMassiveMasterDetails(' . $id . ',\'entry_list\',\'check_id_mod_anagrafica_certificati_medici\',\'mod_anagrafica\',\'_mod_anagrafica_certificati_medici\',\'getMasterDetail_mod_anagrafica_certificati_medici\')">
-					<i class="fa fa-trash"></i> Cancellazione Massiva
-				</a>';
-		*/
+
 		return $html;
 	}
 
 
+
 	/**
+	 * 
 	 * Funzione caricamento della master details, tabella _mod_anagrafica_corsi
 	 * @param mixed $id
 	 * @param string $isAjax
@@ -319,19 +297,6 @@ class Mod_anagrafica extends BaseController
 		$html = '';
 		$winFormType = "form"; //VALORI ACCETTATI: {'multi','form'}
 
-		/*
-		if($isAjax == 'FALSE'){
-			if($winFormType == "form"){
-				$html .= '
-							<br><a class="btn btn-primary" style="cursor:pointer" onclick="winFormMasterDetails(\'mod_anagrafica\',\'winMasterDetail_mod_anagrafica_corsi\',\'insert\','.$id.',\'NULL\',\'NUOVO Anagrafati Corsi\', arrayValidationFields,\'winMasterDetail_mod_anagrafica_corsi\',\'form\')">[ Aggiungi un elemento]</a><br>
-							<br><br>';
-			} else {
-				$html .= '
-						<br><a class="btn btn-primary" style="cursor:pointer" onclick="winFormMasterDetails(\'mod_anagrafica\',\'winMasterDetailMulti_mod_anagrafica_corsi\',\'insert\','.$id.',\'NULL\',\'NUOVO Anagrafati Corsi\', arrayValidationFields,\'winMasterDetailMulti_mod_anagrafica_corsi\',\'multi\')">[ Aggiungi un elemento]</a><br>
-						<br><br>';
-			}
-		}
-		*/
 
 		$html .= '<br><br>';
 		$html .= "<table class='TFtable' id='tbl_mod_anagrafica_corsi' style='font-size:12px'>
@@ -341,37 +306,23 @@ class Mod_anagrafica extends BaseController
 							<input type='checkbox' id='check_master_mod_anagrafica_corsi' name='check_master_mod_anagrafica_corsi' 
 							onchange=\"selezionaDeselezionaTutti('check_master_mod_anagrafica_corsi','check_id_mod_anagrafica_corsi','btDeleteMass_mod_anagrafica_corsi')\">
 						</th>";
-		//$html.='<th>Alunno</th>';
 		$html .= '<th>Corso Frequentato</th>';
-		if ($winFormType == "form") {
-			//	$html.='<th>Modifica</th>';
-		}
-		//$html.='<th>Elimina</th>';
 		$html .= '</tr>';
 		$html .= '<tbody>';
 		foreach ($row as $key => $value) {
 			$html .= "<tr>";
 			$html .= "<td><input type='checkbox' id='check_id_mod_anagrafica_corsi' name='check_id_mod_anagrafica_corsi' value='" . $value['id'] . "' onchange=\"verificaNrCheckBoxSelezionati('check_id_mod_anagrafica_corsi','btDeleteMass_mod_anagrafica_corsi')\"></td>";
-			//$html.="<td><input type='hidden' id='id[]' name='id[]' value='".$value['id']."'>".$value['mod_anagrafica_nome']."</td>";
 			$html .= "<td><input type='hidden' id='id[]' name='id[]' value='" . $value['id'] . "'>" . $value['mod_corsi_nome'] . "</td>";
-			if ($winFormType == "form") {
-				//	$html.="<td><a style='cursor:pointer' class='btn btn-sm btn-info' onclick ='winFormMasterDetails(\"mod_anagrafica\",\"winMasterDetail_mod_anagrafica_corsi\",\"edit\", $id,".$value['id'].",\"MODIFICA Anagrafati Corsi\",arrayValidationFields)' title='Modifica Anagrafati Corsi'><i class='fa fa-edit'></a></td>";
-			}
-			//$html.="<td><a style='cursor:pointer' class='btn btn-sm btn-danger deleteUser' onclick ='deleteMasterDetails(".$value['id'].", ".$id.", \"mod_anagrafica\",\"_mod_anagrafica_corsi\")' title='Elimina'><i class='fa fa-trash'></a></td>";
 			$html .= '</tr>';
 		}
 		$html .= '</tbody></table>';
-		/*
-		$html.='<br/><a class="btn btn-sm btn-danger deleteUser" id="btDeleteMass_mod_anagrafica_corsi" name="btDeleteMass_mod_anagrafica_corsi""
-					onclick="deleteMassiveMasterDetails('.$id.',\'entry_list\',\'check_id_mod_anagrafica_corsi\',\'mod_anagrafica\',\'_mod_anagrafica_corsi\')">
-					<i class="fa fa-trash"></i> Cancellazione Massiva
-				</a>';
-		*/
+
 		return $html;
 	}
 
 
 	/**
+	 * 
 	 * Funzione caricamento della master details, tabella _mod_anagrafica_green_pass
 	 * @param mixed $id
 	 * @param string $isAjax
@@ -437,6 +388,7 @@ class Mod_anagrafica extends BaseController
 
 
 	/**
+	 * 
 	 * Funzione caricamento della master details, tabella _mod_anagrafica_green_pass_autocertificazione
 	 * @param mixed $id
 	 * @param string $isAjax
@@ -448,19 +400,6 @@ class Mod_anagrafica extends BaseController
 		$html = '';
 		$winFormType = "form"; //VALORI ACCETTATI: {'multi','form'}
 
-		if ($isAjax == 'FALSE') {
-			/*
-			if ($winFormType == "form") {
-				$html .= '
-							<br><a class="btn btn-primary" style="cursor:pointer" onclick="winFormMasterDetails(\'mod_anagrafica\',\'winMasterDetail_mod_anagrafica_green_pass_autocertificazione\',\'insert\',' . $id . ',\'NULL\',\'Aggiungi Green pass autocertificazione\', arrayValidationFields,\'winMasterDetail_mod_anagrafica_green_pass_autocertificazione\',\'form\',\'getMasterDetail_mod_anagrafica_green_pass_autocertificazione\')">[ Aggiungi un elemento]</a><br>
-							<br><br>';
-			} else {
-				$html .= '
-						<br><a class="btn btn-primary" style="cursor:pointer" onclick="winFormMasterDetails(\'mod_anagrafica\',\'winMasterDetailMulti_mod_anagrafica_green_pass_autocertificazione\',\'insert\',' . $id . ',\'NULL\',\'Aggiungi Green pass autocertificazione\', arrayValidationFields,\'winMasterDetailMulti_mod_anagrafica_green_pass_autocertificazione\',\'multi\',\'getMasterDetail_mod_anagrafica_green_pass_autocertificazione\')">[ Aggiungi un elemento]</a><br>
-						<br><br>';
-			}
-			*/
-		}
 		$html .= "<br><br><table class='TFtable' id='tbl_mod_anagrafica_green_pass_autocertificazione' style='font-size:12px'>
 					<tr>
 						<thead>
@@ -471,10 +410,6 @@ class Mod_anagrafica extends BaseController
 		$html .= '<th>Autocertificazione</th>';			
 		$html .= '<th>Data Autocertificazione Data Fine Validita</th>';
 
-		if ($winFormType == "form") {
-			//$html .= '<th>Modifica</th>';
-		}
-		//$html .= '<th>Elimina</th>';
 		$html .= '</tr>';
 		$html .= '<tbody>';
 		foreach ($row as $key => $value) {
@@ -483,26 +418,19 @@ class Mod_anagrafica extends BaseController
 			$html .= "<td><input type='hidden' id='id[]' name='id[]' value='" . $value['id'] . "'><a href='mod_anagrafica/scaricaAllegatoBlob/_mod_anagrafica_green_pass_autocertificazione/documento_upload/".$value['id']."' target='_blank'><img src=\"".base_url()."assets/images/download_multimedia_file_document_icon.png\"> Scarica Documento</a></td>";
 			$html .= "<td><input type='hidden' id='id[]' name='id[]' value='" . $value['id'] . "'>" . $this->utilities->convertToDateIT($value['data_autocertificazione_fine_validita']) . "</td>";
 
-			if ($winFormType == "form") {
-				//$html .= "<td><a style='cursor:pointer' class='btn btn-sm btn-info' onclick ='winFormMasterDetails(\"mod_anagrafica\",\"winMasterDetail_mod_anagrafica_green_pass_autocertificazione\",\"edit\", $id," . $value['id'] . ",\"MODIFICA Anagrafati Green pass autocertificazione\",arrayValidationFields,\"winMasterDetail_mod_anagrafica_green_pass_autocertificazione\",\"form\",\"getMasterDetail_mod_anagrafica_green_pass_autocertificazione\")' title='Modifica Anagrafati Green pass autocertificazione'><i class='fa fa-edit'></a></td>";
-			}
-			//$html .= "<td><a style='cursor:pointer' class='btn btn-sm btn-danger deleteUser' onclick ='deleteMasterDetails(" . $value['id'] . ", " . $id . ", \"mod_anagrafica\",\"_mod_anagrafica_green_pass_autocertificazione\",\"getMasterDetail_mod_anagrafica_green_pass_autocertificazione\")' title='Elimina'><i class='fa fa-trash'></a></td>";
 			$html .= '</tr>';
 		}
 		$html .= '</tbody></table>';
 
 		$html .= '<BR><BR><a href="'.$this->mod_name.'/stampaAutocertificazioneGreenPass/'.$id.'" target="_blank"><img src="'.base_url().'assets/images/pdf.png" width="32"> Stampa Autocertificazione pre-compilata da firmare</a><br><br>';
-		/*
-		$html .= '<br/><a class="btn btn-sm btn-danger deleteUser" id="btDeleteMass_mod_anagrafica_green_pass_autocertificazione" name="btDeleteMass_mod_anagrafica_green_pass_autocertificazione""
-					onclick="deleteMassiveMasterDetails(' . $id . ',\'entry_list\',\'check_id_mod_anagrafica_green_pass_autocertificazione\',\'mod_anagrafica\',\'_mod_anagrafica_green_pass_autocertificazione\',\'getMasterDetail_mod_anagrafica_green_pass_autocertificazione\')">
-					<i class="fa fa-trash"></i> Cancellazione Massiva
-				</a>';
-		*/
+
 		return $html;
 	}
 
 
+
 	/**
+	 * 
 	 * Funzione caricamento della master details, tabella _mod_anagrafica_green_pass_esentati
 	 * @param mixed $id
 	 * @param string $isAjax
@@ -582,35 +510,20 @@ class Mod_anagrafica extends BaseController
 							onchange=\"selezionaDeselezionaTutti('check_master_mod_anagrafica_tessere_assoc','check_id_mod_anagrafica_tessere_assoc','btDeleteMass_mod_anagrafica_tessere_assoc')\">
 						</th>";
 		$html .= '<th>Affiliazione</th>';
-		//$html.='<th>Alunno</th>';
 		$html .= '<th>Tessera Interna</th>';
 		$html .= '<th>Tessera Associativa</th>';
-		if ($winFormType == "form") {
-			//	$html.='<th>Modifica</th>';
-		}
-		//$html.='<th>Elimina</th>';
 		$html .= '</tr>';
 		$html .= '<tbody>';
 		foreach ($row as $key => $value) {
 			$html .= "<tr>";
 			$html .= "<td><input type='checkbox' id='check_id_mod_anagrafica_tessere_assoc' name='check_id_mod_anagrafica_tessere_assoc' value='" . $value['id'] . "' onchange=\"verificaNrCheckBoxSelezionati('check_id_mod_anagrafica_tessere_assoc','btDeleteMass_mod_anagrafica_tessere_assoc')\"></td>";
 			$html .= "<td><input type='hidden' id='id[]' name='id[]' value='" . $value['id'] . "'>" . $value['mod_affiliazioni_nome'] . "</td>";
-			//$html.="<td><input type='hidden' id='id[]' name='id[]' value='".$value['id']."'>".$value['mod_anagrafica_nome']."</td>";
 			$html .= "<td><input type='hidden' id='id[]' name='id[]' value='" . $value['id'] . "'>" . $value['tessera_interna'] . "</td>";
 			$html .= "<td><input type='hidden' id='id[]' name='id[]' value='" . $value['id'] . "'>" . $value['tessera_associativa'] . "</td>";
-			if ($winFormType == "form") {
-				//	$html.="<td><a style='cursor:pointer' class='btn btn-sm btn-info' onclick ='winFormMasterDetails(\"mod_anagrafica\",\"winMasterDetail_mod_anagrafica_tessere_assoc\",\"edit\", $id,".$value['id'].",\"MODIFICA Anagrafati Tessere Associative\",arrayValidationFields)' title='Modifica Anagrafati Tessere Associative'><i class='fa fa-edit'></a></td>";
-			}
-			//$html.="<td><a style='cursor:pointer' class='btn btn-sm btn-danger deleteUser' onclick ='deleteMasterDetails(".$value['id'].", ".$id.", \"mod_anagrafica\",\"_mod_anagrafica_tessere_assoc\")' title='Elimina'><i class='fa fa-trash'></a></td>";
 			$html .= '</tr>';
 		}
 		$html .= '</tbody></table>';
-		/*
-		$html.='<br/><a class="btn btn-sm btn-danger deleteUser" id="btDeleteMass_mod_anagrafica_tessere_assoc" name="btDeleteMass_mod_anagrafica_tessere_assoc""
-					onclick="deleteMassiveMasterDetails('.$id.',\'entry_list\',\'check_id_mod_anagrafica_tessere_assoc\',\'mod_anagrafica\',\'_mod_anagrafica_tessere_assoc\')">
-					<i class="fa fa-trash"></i> Cancellazione Massiva
-				</a>';
-		*/
+
 		return $html;
 	}
 
@@ -647,27 +560,18 @@ class Mod_anagrafica extends BaseController
 		foreach ($row as $key => $value) {
 			$html .= "<tr>";
 			$html .= "<td><input type='checkbox' id='check_id_mod_anagrafica_tessere_interne' name='check_id_mod_anagrafica_tessere_interne' value='" . $value['id'] . "' onchange=\"verificaNrCheckBoxSelezionati('check_id_mod_anagrafica_tessere_interne','btDeleteMass_mod_anagrafica_tessere_interne')\"></td>";
-			//$html.="<td><input type='hidden' id='id[]' name='id[]' value='".$value['id']."'>".$value['mod_anagrafica_nome']."</td>";
 			$html .= "<td><input type='hidden' id='id[]' name='id[]' value='" . $value['id'] . "'>" . $value['mod_esercizi_nome'] . "</td>";
 			$html .= "<td><input type='hidden' id='id[]' name='id[]' value='" . $value['id'] . "'>" . $value['tessera_interna'] . "</td>";
-			if ($winFormType == "form") {
-				//		$html.="<td><a style='cursor:pointer' class='btn btn-sm btn-info' onclick ='winFormMasterDetails(\"mod_anagrafica\",\"winMasterDetail_mod_anagrafica_tessere_interne\",\"edit\", $id,".$value['id'].",\"MODIFICA Anagrafati Tessere Interne\",arrayValidationFields)' title='Modifica Anagrafati Tessere Interne'><i class='fa fa-edit'></a></td>";
-			}
-			//	$html.="<td><a style='cursor:pointer' class='btn btn-sm btn-danger deleteUser' onclick ='deleteMasterDetails(".$value['id'].", ".$id.", \"mod_anagrafica\",\"_mod_anagrafica_tessere_interne\")' title='Elimina'><i class='fa fa-trash'></a></td>";
-			$html .= '</tr>';
+ 			$html .= '</tr>';
 		}
 		$html .= '</tbody></table>';
-		/*
-		$html.='<br/><a class="btn btn-sm btn-danger deleteUser" id="btDeleteMass_mod_anagrafica_tessere_interne" name="btDeleteMass_mod_anagrafica_tessere_interne""
-					onclick="deleteMassiveMasterDetails('.$id.',\'entry_list\',\'check_id_mod_anagrafica_tessere_interne\',\'mod_anagrafica\',\'_mod_anagrafica_tessere_interne\')">
-					<i class="fa fa-trash"></i> Cancellazione Massiva
-				</a>';
-		*/
+ 
 		return $html;
 	}
 
 
 	/**
+	 * 
 	 * Funzione caricamento della master details, tabella _mod_corsi_insegnanti
 	 * @param mixed $id
 	 * @param string $isAjax
@@ -679,19 +583,6 @@ class Mod_anagrafica extends BaseController
 		$html = '';
 		$winFormType = "form"; //VALORI ACCETTATI: {'multi','form'}
 
-		/*
-		if($isAjax == 'FALSE'){
-			if($winFormType == "form"){
-				$html .= '
-							<br><a class="btn btn-primary" style="cursor:pointer" onclick="winFormMasterDetails(\'mod_anagrafica\',\'winMasterDetail_mod_corsi_insegnanti\',\'insert\','.$id.',\'NULL\',\'NUOVO Corsi associati ad insegnanti\', arrayValidationFields,\'winMasterDetail_mod_corsi_insegnanti\',\'form\')">[ Aggiungi un elemento]</a><br>
-							<br><br>';
-			} else {
-				$html .= '
-						<br><a class="btn btn-primary" style="cursor:pointer" onclick="winFormMasterDetails(\'mod_anagrafica\',\'winMasterDetailMulti_mod_corsi_insegnanti\',\'insert\','.$id.',\'NULL\',\'NUOVO Corsi associati ad insegnanti\', arrayValidationFields,\'winMasterDetailMulti_mod_corsi_insegnanti\',\'multi\')">[ Aggiungi un elemento]</a><br>
-						<br><br>';
-			}
-		}
-		*/
 		$html .= '<br><br>';
 		$html .= "<table class='TFtable' id='tbl_mod_corsi_insegnanti' style='font-size:12px'>
 					<tr>
@@ -700,37 +591,23 @@ class Mod_anagrafica extends BaseController
 							<input type='checkbox' id='check_master_mod_corsi_insegnanti' name='check_master_mod_corsi_insegnanti' 
 							onchange=\"selezionaDeselezionaTutti('check_master_mod_corsi_insegnanti','check_id_mod_corsi_insegnanti','btDeleteMass_mod_corsi_insegnanti')\">
 						</th>";
-		//$html.='<th>Insegnante</th>';
 		$html .= '<th>Corso svolto da insegnante</th>';
-		if ($winFormType == "form") {
-			//	$html.='<th>Modifica</th>';
-		}
-		//$html.='<th>Elimina</th>';
 		$html .= '</tr>';
 		$html .= '<tbody>';
 		foreach ($row as $key => $value) {
 			$html .= "<tr>";
 			$html .= "<td><input type='checkbox' id='check_id_mod_corsi_insegnanti' name='check_id_mod_corsi_insegnanti' value='" . $value['id'] . "' onchange=\"verificaNrCheckBoxSelezionati('check_id_mod_corsi_insegnanti','btDeleteMass_mod_corsi_insegnanti')\"></td>";
-			//$html.="<td><input type='hidden' id='id[]' name='id[]' value='".$value['id']."'>".$value['mod_anagrafica_nome']."</td>";
 			$html .= "<td><input type='hidden' id='id[]' name='id[]' value='" . $value['id'] . "'>" . $value['mod_corsi_nome'] . "</td>";
-			if ($winFormType == "form") {
-				//$html.="<td><a style='cursor:pointer' class='btn btn-sm btn-info' onclick ='winFormMasterDetails(\"mod_anagrafica\",\"winMasterDetail_mod_corsi_insegnanti\",\"edit\", $id,".$value['id'].",\"MODIFICA Corsi associati ad insegnanti\",arrayValidationFields)' title='Modifica Corsi associati ad insegnanti'><i class='fa fa-edit'></a></td>";
-			}
-			//$html.="<td><a style='cursor:pointer' class='btn btn-sm btn-danger deleteUser' onclick ='deleteMasterDetails(".$value['id'].", ".$id.", \"mod_anagrafica\",\"_mod_corsi_insegnanti\")' title='Elimina'><i class='fa fa-trash'></a></td>";
 			$html .= '</tr>';
 		}
 		$html .= '</tbody></table>';
-		/*
-		$html.='<br/><a class="btn btn-sm btn-danger deleteUser" id="btDeleteMass_mod_corsi_insegnanti" name="btDeleteMass_mod_corsi_insegnanti""
-					onclick="deleteMassiveMasterDetails('.$id.',\'entry_list\',\'check_id_mod_corsi_insegnanti\',\'mod_anagrafica\',\'_mod_corsi_insegnanti\')">
-					<i class="fa fa-trash"></i> Cancellazione Massiva
-				</a>';
-		*/
+ 
 		return $html;
 	}
 
 
 	/**
+	 * 
 	 * Funzione caricamento della master details, tabella _mod_corsi_iscrizioni
 	 * @param mixed $id
 	 * @param string $isAjax
@@ -818,7 +695,7 @@ class Mod_anagrafica extends BaseController
 			}
 		}
 
-		//$html .= '<br><br>';
+ 
 		$html .= "<table class='TFtable' id='tbl_mod_insegnanti_discipline' style='font-size:12px'>
 					<tr>
 						<thead>
@@ -827,34 +704,24 @@ class Mod_anagrafica extends BaseController
 							onchange=\"selezionaDeselezionaTutti('check_master_mod_insegnanti_discipline','check_id_mod_insegnanti_discipline','btDeleteMass_mod_insegnanti_discipline')\">
 						</th>";
 		$html .= '<th>Disciplina</th>';
-		if ($winFormType == "form") {
-			//$html .= '<th>Modifica</th>';
-		}
-		//$html .= '<th>Elimina</th>';
+ 
 		$html .= '</tr>';
 		$html .= '<tbody>';
 		foreach ($row as $key => $value) {
 			$html .= "<tr>";
 			$html .= "<td><input type='checkbox' id='check_id_mod_insegnanti_discipline' name='check_id_mod_insegnanti_discipline' value='" . $value['id'] . "' onchange=\"verificaNrCheckBoxSelezionati('check_id_mod_insegnanti_discipline','btDeleteMass_mod_insegnanti_discipline')\"></td>";
 			$html .= "<td><input type='hidden' id='id[]' name='id[]' value='" . $value['id'] . "'>" . $value['mod_discipline_nome'] . "</td>";
-			if ($winFormType == "form") {
-				//$html .= "<td><a style='cursor:pointer' class='btn btn-sm btn-info' onclick ='winFormMasterDetails(\"mod_anagrafica\",\"winMasterDetail_mod_insegnanti_discipline\",\"edit\", $id," . $value['id'] . ",\"MODIFICA Insegnanti associati a discipline\",arrayValidationFields)' title='Modifica Insegnanti associati a discipline'><i class='fa fa-edit'></a></td>";
-			}
-			//$html .= "<td><a style='cursor:pointer' class='btn btn-sm btn-danger deleteUser' onclick ='deleteMasterDetails(" . $value['id'] . ", " . $id . ", \"mod_anagrafica\",\"_mod_insegnanti_discipline\",\"getMasterDetail_mod_insegnanti_discipline\")' title='Elimina'><i class='fa fa-trash'></a></td>";
 			$html .= '</tr>';
 		}
 		$html .= '</tbody></table>';
-		/*
-		$html .= '<br/><a class="btn btn-sm btn-danger deleteUser" id="btDeleteMass_mod_insegnanti_discipline" name="btDeleteMass_mod_insegnanti_discipline""
-					onclick="deleteMassiveMasterDetails(' . $id . ',\'entry_list\',\'check_id_mod_insegnanti_discipline\',\'mod_anagrafica\',\'_mod_insegnanti_discipline\',\'getMasterDetail_mod_insegnanti_discipline\')">
-					<i class="fa fa-trash"></i> Cancellazione Massiva
-				</a>';
-		*/
+
 		return $html;
 	}
 
 
 	/**
+	 * 
+	 * 
 	 * Funzione caricamento della finestra per la master details, tabella _mod_anagrafica_certificati_medici
 	 * @param mixed $action
 	 * @param string $entryID
@@ -865,7 +732,6 @@ class Mod_anagrafica extends BaseController
 	{
  
 		$rowWinForm = $this->modelClassModule->get_from_master_details_by_id($entryIDMasterDetails, '_mod_anagrafica_certificati_medici', 'id');
-		//print'<pre>';print_r($rowWinForm);
 
 		if(!isset($rowWinForm['data_certificato'])){
 			$rowWinForm['data_certificato'] = date("Y-m-d");
@@ -980,26 +846,12 @@ class Mod_anagrafica extends BaseController
 					</div>';
 
 
-		/*
-		if ($rowWinForm['documento_upload'] != '') {
-			$html .= "\n<script>";
-			$html .= "\nconsole.log('documento_upload is full');";
-			$html .= "\ndelete arrayValidationFields['winMasterDetail_mod_anagrafica_certificati_medici']['documento_upload'];";
-			$html .= "\n</script>";
-		} else {
-			$html .= "\n<script>";
-			$html .= "\narrayValidationFields['winMasterDetail_mod_anagrafica_certificati_medici']['documento_upload'] = [];";
-			$html .= "\narrayValidationFields['winMasterDetail_mod_anagrafica_certificati_medici']['documento_upload']['label'] = \"Documento Upload\";";
-			$html .= "\narrayValidationFields['winMasterDetail_mod_anagrafica_certificati_medici']['documento_upload']['field_type'] = \"longblob\";";
-			$html .= "\n</script>";
-		}	
-		*/
-
 		return $html;
 	}
 
 
 	/**
+	 * 
 	 * Funzione caricamento della finestra per la master details, tabella _mod_anagrafica_corsi
 	 * @param mixed $action
 	 * @param string $entryID
@@ -1110,6 +962,7 @@ class Mod_anagrafica extends BaseController
 
 
 	/**
+	 * 
 	 * Funzione caricamento della finestra per la master details, tabella _mod_anagrafica_green_pass
 	 * @param mixed $action
 	 * @param string $entryID
@@ -1223,26 +1076,12 @@ class Mod_anagrafica extends BaseController
 					</div>';
 
 
-		/*
-		if ($rowWinForm['documento_upload'] != '') {
-			$html .= "\n<script>";
-			$html .= "\nconsole.log('documento_upload is full');";
-			$html .= "\ndelete arrayValidationFields['winMasterDetail_mod_anagrafica_green_pass']['documento_upload'];";
-			$html .= "\n</script>";
-		} else {
-			$html .= "\n<script>";
-			$html .= "\narrayValidationFields['winMasterDetail_mod_anagrafica_green_pass']['documento_upload'] = [];";
-			$html .= "\narrayValidationFields['winMasterDetail_mod_anagrafica_green_pass']['documento_upload']['label'] = \"Documento Upload\";";
-			$html .= "\narrayValidationFields['winMasterDetail_mod_anagrafica_green_pass']['documento_upload']['field_type'] = \"longblob\";";
-			$html .= "\n</script>";
-		}	
-		*/
-
 		return $html;
 	}
 
 
 	/**
+	 * 
 	 * Funzione caricamento della finestra per la master details, tabella _mod_anagrafica_green_pass_autocertificazione
 	 * @param mixed $action
 	 * @param string $entryID
@@ -1312,26 +1151,13 @@ class Mod_anagrafica extends BaseController
 							</form>
 						</section>
 					</div>';
-		/*
-		if ($rowWinForm['documento_upload'] != '') {
-			$html .= "\n<script>";
-			$html .= "\nconsole.log('documento_upload is full');";
-			$html .= "\ndelete arrayValidationFields['winMasterDetail_mod_anagrafica_green_pass_autocertificazione']['documento_upload'];";
-			$html .= "\n</script>";
-		} else {
-			$html .= "\n<script>";
-			$html .= "\narrayValidationFields['winMasterDetail_mod_anagrafica_green_pass_autocertificazione']['documento_upload'] = [];";
-			$html .= "\narrayValidationFields['winMasterDetail_mod_anagrafica_green_pass_autocertificazione']['documento_upload']['label'] = \"Documento Upload\";";
-			$html .= "\narrayValidationFields['winMasterDetail_mod_anagrafica_green_pass_autocertificazione']['documento_upload']['field_type'] = \"longblob\";";
-			$html .= "\n</script>";
-		}	
-		*/
 
 		return $html;
 	}
 
 
 	/**
+	 * 
 	 * Funzione caricamento della finestra per la master details, tabella _mod_anagrafica_green_pass_esentati
 	 * @param mixed $action
 	 * @param string $entryID
@@ -1420,6 +1246,7 @@ class Mod_anagrafica extends BaseController
 
 
 	/**
+	 * 
 	 * Funzione caricamento della finestra per la master details, tabella _mod_anagrafica_tessere_assoc
 	 * @param mixed $action
 	 * @param string $entryID
@@ -1541,6 +1368,7 @@ class Mod_anagrafica extends BaseController
 
 
 	/**
+	 * 
 	 * Funzione caricamento della finestra per la master details, tabella _mod_anagrafica_tessere_interne
 	 * @param mixed $action
 	 * @param string $entryID
@@ -1662,6 +1490,7 @@ class Mod_anagrafica extends BaseController
 
 
 	/**
+	 * 
 	 * Funzione caricamento della finestra per la master details, tabella _mod_corsi_insegnanti
 	 * @param mixed $action
 	 * @param string $entryID
@@ -1772,6 +1601,7 @@ class Mod_anagrafica extends BaseController
 
 
 	/**
+	 * 
 	 * Funzione caricamento della finestra per la master details, tabella _mod_corsi_iscrizioni
 	 * @param mixed $action
 	 * @param string $entryID

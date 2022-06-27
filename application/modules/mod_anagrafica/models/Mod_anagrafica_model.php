@@ -30,7 +30,6 @@ class Mod_anagrafica_model extends BaseModel
 		$this->setFieldArrayGrid('fk_comune_nascita',FIELD_NUMERIC,'mod_comuni',array("id" => 'istat', "nome" => 'comune'));
 		$this->setFieldArrayGrid('fk_comune_residenza',FIELD_NUMERIC,'mod_comuni',array("id" => 'istat', "nome" => 'comune'));
 		$this->setFieldArrayGrid('fk_tutore',FIELD_NUMERIC,'anagrafica_v',array("id" => 'id_anagrafica_v', "nome" => array("nome_anagrafica_v"," ","cognome_anagrafica_v"," ' - ' ","codfiscale_anagrafica_v") ),'grd_tutore',"LEFT");
-		//$this->setFieldArrayGrid('fk_tutore',FIELD_NUMERIC,NULL,NULL,"fk_tutore");
 		$this->setFieldArrayGrid('img_foto', FIELD_BLOB_IMG);
 		$this->setFieldArrayGrid('firma', FIELD_BLOB_IMG);
 		$this->setFieldArrayGrid('indirizzo', FIELD_STRING);
@@ -53,11 +52,7 @@ class Mod_anagrafica_model extends BaseModel
 
 
 	public function json($searchFilter) {
-
-		//print'<pre>';print_r($_REQUEST['searchFilter']);
-		//print'<pre>';print_r($searchFilter);
 		$_REQUEST['searchFilter'] = $searchFilter;
-		//print'<pre>';print_r($_REQUEST['searchFilter']);
 		$button = "";   
         $perm_read = "";
         $perm_write = "";
@@ -104,7 +99,9 @@ class Mod_anagrafica_model extends BaseModel
 		return $this->datatables->generate();
 	}	
 
+
 	/**
+	 * 
 	* Funzione caricamento della master details, tabella _mod_anagrafica_certificati_medici
 	* @param mixed $id
 	* @param string $isAjax
@@ -226,7 +223,9 @@ class Mod_anagrafica_model extends BaseModel
 	}
 
 
+
 	/**
+	 * 
 	* Funzione caricamento della master details, tabella _mod_anagrafica_tessere_interne
 	* @param mixed $id
 	* @param string $isAjax
@@ -248,6 +247,7 @@ class Mod_anagrafica_model extends BaseModel
 
 
 	/**
+	 * 
 	* Funzione caricamento della master details, tabella _mod_corsi_insegnanti
 	* @param mixed $id
 	* @param string $isAjax
@@ -509,6 +509,12 @@ class Mod_anagrafica_model extends BaseModel
 
 
 
+	/**
+	 * 
+	 *  Verifica gli attributi di un'anagrafica:se alunno,insegnante, direttivo
+	 *  @param mixed $id
+	 *  @return array
+	*/
 	public function checkAttributo($id){
 		$row = array();
 		if($id != ""){
@@ -520,6 +526,13 @@ class Mod_anagrafica_model extends BaseModel
 	} 
 
 
+
+	/**
+	 * 
+	 *  Verifica se un'anagrafica è sottoposto a green pass
+	 *  @param mixed $id
+	 *  @return string
+	*/		
 	public function checkSottopostoRegimeGP($id){
 		$row = array();
 		if($id != ""){
@@ -559,20 +572,30 @@ class Mod_anagrafica_model extends BaseModel
 
 
 
-    /**
-     * 
-     */
+	/**
+	 * 
+	 * Ritorna i dettagli un allegato blob
+	 * @param string $moduleName
+	 * @param string $fieldName
+	 * @param int $entryId
+	 * @return void
+	 */
     public function getAllegatoBlob($moduleName, $fieldName,$entryId){
         $sql ="SELECT ".$moduleName.".".$fieldName." as allegato, 
 						nome_documento as nome_allegato
                     FROM $moduleName
-                    WHERE $moduleName.id = ".$entryId;      
-        //echo $sql; die();           
+                    WHERE $moduleName.id = ".$entryId;              
 
         return $this->db->query($sql)->result_array();	
     }
 	
 
+
+	/**
+	 * 
+	 * Genera tutore temporaneo in attesa di definire quello definitivo
+	 * @return array
+	 */	
 	public function genTutore(){
 		$row = $this->db->query("SELECT (MAX(id) + 1) AS new_id FROM mod_anagrafica")->result_array();	
 		$data = array();
