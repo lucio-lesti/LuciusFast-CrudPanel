@@ -14,31 +14,6 @@ class Mod_report_pagamenti_mensili_corso_model extends BaseModel
 		$this->id = '';
 		$this->mod_name = 'mod_report_pagamenti_mensili_corso';
 		$this->mod_type = 'report';
-
-
-		//NOTE:NELLA FUNZIONE 'setFieldArrayGrid' INDICARE NEL VETTORE CHE SI COLLEGA ALLA TABELLA REFERENZIATA
-		//ALLA CHIAVE 'NOME', IL NOMINATIVO DEL CAMPO COLLEGATO
-
-		$this->setFieldArrayGrid('Ago', FIELD_STRING);
-		$this->setFieldArrayGrid('Anagrafica', FIELD_STRING);
-		$this->setFieldArrayGrid('mod_corsi_nome', FIELD_STRING);
-		$this->setFieldArrayGrid('mod_corsi_tipo', FIELD_STRING);
-		$this->setFieldArrayGrid('Apr', FIELD_STRING);
-		$this->setFieldArrayGrid('Data_Iscrizione', FIELD_DATE);
-		$this->setFieldArrayGrid('Dic', FIELD_STRING);
-		$this->setFieldArrayGrid('Feb', FIELD_STRING);
-		$this->setFieldArrayGrid('Gen', FIELD_STRING);
-		$this->setFieldArrayGrid('Giu', FIELD_STRING);
-		$this->setFieldArrayGrid('id', FIELD_STRING);
-		$this->setFieldArrayGrid('ids', FIELD_STRING);
-		$this->setFieldArrayGrid('Lug', FIELD_STRING);
-		$this->setFieldArrayGrid('Mag', FIELD_STRING);
-		$this->setFieldArrayGrid('Mar', FIELD_STRING);
-		$this->setFieldArrayGrid('Nov', FIELD_STRING);
-		$this->setFieldArrayGrid('Ott', FIELD_STRING);
-		$this->setFieldArrayGrid('Set', FIELD_STRING);
-		$this->setFieldArrayGrid('id', FIELD_NUMERIC);
-
 	}
 
 
@@ -50,7 +25,6 @@ class Mod_report_pagamenti_mensili_corso_model extends BaseModel
      */
     public function json(Array $searchFilter)
     {
-		//print'<pre>';print_r($_REQUEST['searchFilter']);die();
 		$searchFilterObj = new stdClass();
 		if(isset($_REQUEST['searchFilter'])){
 			foreach($_REQUEST['searchFilter'] as $k => $v){
