@@ -17,33 +17,7 @@ class Mod_anagrafica_pagamenti_v_model extends BaseModel
 		$this->mod_type = 'crud';
 
 
-		//NOTE:NELLA FUNZIONE 'setFieldArrayGrid' INDICARE NEL VETTORE CHE SI COLLEGA ALLA TABELLA REFERENZIATA
-		//ALLA CHIAVE 'NOME', IL NOMINATIVO DEL CAMPO COLLEGATO
-
-		//NOTE 2: NELLA FUNZIONE 'setFieldArrayGrid' se nella chiave "nome" si usa una array, la classe "BaseModel" lo interpreta come un concat
-
-		$this->setFieldArrayGrid('id', FIELD_NUMERIC);
-		$this->setFieldArrayGrid('anagrafica_id', FIELD_NUMERIC);
-		$this->setFieldArrayGrid('anagrafica', FIELD_STRING);
-		$this->setFieldArrayGrid('affiliazione_id', FIELD_STRING);
-		$this->setFieldArrayGrid('affiliazione', FIELD_STRING);
-		$this->setFieldArrayGrid('esercizio_id', FIELD_NUMERIC);
-		$this->setFieldArrayGrid('esercizio', FIELD_STRING);
-		$this->setFieldArrayGrid('saldo', FIELD_STRING);
-		$this->setFieldArrayGrid('datapagamento', FIELD_DATE);
-		$this->setFieldArrayGrid('mese', FIELD_STRING);
-		$this->setFieldArrayGrid('anno', FIELD_STRING);
-		$this->setFieldArrayGrid('importo', FIELD_FLOAT);
-	 
-
-		//ESEMPIO DI TABELLA REFERENZIATA CHE NON HA IL CAMPO 'NOME'. QUI INDICHIAMO AL PROGRAMMA QUALE E' IL CAMPO DA USARE COME CAMPO 'NOME'
-		//P.S.QUESTA OPERAZIONE E' POSSIBILE FARLA ANCHE NEL METODO 'setFieldArrayGrid'
-		//$this->arrayColumnsReferenced['mod_sport']['nome'] = "sport"; 
-
 	}
-
-
-
 
 
     /**
@@ -65,13 +39,11 @@ class Mod_anagrafica_pagamenti_v_model extends BaseModel
 				break;
 			}
 		}
-		//print'<pre>';print_r($global_permissions);die();
 
 
 		$this->datatables->select("id AS id,
 								esercizio_id,
 								affiliazione_id,
-								tessera_interna as mod_anagrafica_pagamenti_v_codtessera_int,
 								anagrafica AS mod_anagrafica_pagamenti_v_anagrafica,
 								esercizio AS mod_anagrafica_pagamenti_v_esercizio,
 								affiliazione AS mod_anagrafica_pagamenti_v_affiliazione");
