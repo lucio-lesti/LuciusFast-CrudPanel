@@ -15,8 +15,6 @@ class Mod_anagrafica_pagamenti_v_model extends BaseModel
 		$this->pkIdName = 'id';
 		$this->mod_name = 'mod_anagrafica_pagamenti_v';
 		$this->mod_type = 'crud';
-
-
 	}
 
 
@@ -50,11 +48,6 @@ class Mod_anagrafica_pagamenti_v_model extends BaseModel
 		$this->datatables->from("mod_anagrafica_pagamenti_v");	 
 
 		$button = "";   
-		/*
-		if($perm_read == 'Y'){
-			$button .= "<a onclick='readAjax(\"$this->mod_name\",\"$1\")' class='btn btn-sm btn-default' title='Visualizza'><i class='fa fa-eye'></i></a><br>";
-		}
-		*/
 		if($perm_update == 'Y'){
 			$button .= "<a onclick='editAjax(\"$this->mod_name\",\"$1\")' class='btn btn-sm btn-info' title='Modifica'><i class='fa fa-pencil'></i></a><br>";
 		}  
@@ -76,8 +69,7 @@ class Mod_anagrafica_pagamenti_v_model extends BaseModel
 		if(($esercId != "")){
 			$sql .=" WHERE mod_affiliazioni.fk_esercizio = ".$esercId;	
 		}	
-		
-		//echo $sql;die();		
+			
 		$row =  $this->db->query($sql)->result_array();	
 
 		return $row;
@@ -133,9 +125,7 @@ class Mod_anagrafica_pagamenti_v_model extends BaseModel
 				INNER JOIN _mod_anagrafica_corsi
 					ON  _mod_anagrafica_corsi.fk_corso = mod_corsi.id
 					AND _mod_anagrafica_corsi.fk_anagrafica = $idAnagrafica";
- 
-		//echo $sql;
-		//die();		
+
 		return $this->db->query($sql)->result_array();		
 	}
 
@@ -184,7 +174,6 @@ class Mod_anagrafica_pagamenti_v_model extends BaseModel
 				ON mod_causali_pagamento.id = _mod_pagamenti_ricevuti.fk_causale_pagamento						
 			WHERE 1=1
 			AND mod_tipopagamento.nome <> 'TESSERAMENTO'
-			/*AND (_mod_pagamenti_ricevuti.saldo = 'SI' or _mod_pagamenti_ricevuti.saldo = 'NO' or _mod_pagamenti_ricevuti.saldo = 'NON PAGHERA')*/
 			
 			ORDER BY mese_anno ASC";
 		return $this->db->query($sql)->result_array();	
