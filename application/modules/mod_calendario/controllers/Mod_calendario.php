@@ -19,20 +19,6 @@ class Mod_calendario extends BaseController
 		$this->pkIdName = 'id';
 		$this->viewName_ListAjax = 'mod_calendario_list_ajax';
   
-		/*
-		$this->addComboGridFilter(
-			'mod_corsi_id',
-			'mod_corsi',
-			"id",
-			"nome",
-			"Filtra per Corso: ",
-			NULL,
-			FALSE,
-			FALSE,
-			'select2-autocomplete',
-			'reloadMyCalendar'
-		);		
-		*/
 	}
 
  
