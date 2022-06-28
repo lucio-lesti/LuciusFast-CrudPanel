@@ -18,11 +18,7 @@ class Mod_tesseramenti_model extends BaseModel
 
 
 
-    /**
-	 * 
-	 * 
-	 * Rewrite funzione json Basemodel
-	 */
+    // datatables
     public function json($searchFilter) {
 		$button = "";
         $perm_read = "";
@@ -76,18 +72,20 @@ class Mod_tesseramenti_model extends BaseModel
 		$this->datatables->add_column('action',$button, 'id');
 		$this->datatables->add_column('ids','<input type="checkbox" id="check_id" name="check_id" value="$1" onchange="verificaNrCheckBoxSelezionati(\'check_id\',\'btDeleteMass\')" />','id'); 
 		
-
+		/*
+		//print'<pre>';print_r($searchFilter);
+ 		foreach($searchFilter as $key => $value){
+			if($value['value'] != ''){
+				$this->datatables->like($value['field'],$value['value']);	
+			}
+		}
+ 		*/
         return $this->datatables->generate();
     }
 
 
 
-	/**
-	 * 
-	 * Prelevo le affiliazioni in base al filtro passato
-	 * @param mixed $id
-	 * @return string
-	 */
+
 	public function populateAffiliazioni($esercId){
 		
 		$sql = "SELECT mod_affiliazioni.id,mod_affiliazioni.nome
@@ -95,18 +93,14 @@ class Mod_tesseramenti_model extends BaseModel
 		if(($esercId != "")){
 			$sql .=" WHERE mod_affiliazioni.fk_esercizio = ".$esercId;	
 		}	
-				
+		
+		//echo $sql;die();		
 		$row =  $this->db->query($sql)->result_array();	
 
 		return $row;
 	}	
 
 	
-
-	/**
-	 * 
-	 * Prelevo esercizio corrente
-	 */	
 	public function getEsercizioCorrente(){
 		$sql = "SELECT id 
 				FROM mod_esercizi 
@@ -119,30 +113,16 @@ class Mod_tesseramenti_model extends BaseModel
 	}	
 
 
-	/**
-	* 
-	* Prelevo nome affiliazione
-	* @param mixed $id
-	* @return string
-	**/		
 	public function getNomeAffiliazione($id){
 		$sql = "SELECT nome 
 				FROM mod_affiliazioni 
 				where id = ".$id;
 		$row =  $this->db->query($sql)->result_array();	
+		//print'<pre>';print_r($row);
 		return $row[0]['nome'];	
 	}
 
 
-
-	/**
-	* 
-	* Prelevo la tessera in base all'anagrafica
-	* @param mixed $fkAnagrafica
-	* @param string $fkEsercizio
-	* @param string $fk_affiliazione
-	* @return string
-	**/	
 	public function getTessera($fkAnagrafica, $fkEsercizio, $fk_affiliazione){
 		$tessera_interna = "";
 		$lista_tessere_associative = array();
@@ -227,13 +207,6 @@ class Mod_tesseramenti_model extends BaseModel
 	}
 
 
-	/**
-	 * 
-	 * Verifica se la data di tesseramento rientra nell'esericizio
-	 * @param string $idEsercizio
-	 * @param date $data_tesseramento
-	 * @return bool
-	 */	
 	public function check_data_tesseramento($idEsercizio, $data_tesseramento){
 		$ret = TRUE;
 		
@@ -251,28 +224,12 @@ class Mod_tesseramenti_model extends BaseModel
 		return $ret;
 	}
 
-
-
-	/**
-	* 
-	* Prelevo id Anagrafica
-	* @param mixed $idTesseramento
-	* @return string
-	**/
 	public function getFkAnagrafica($idTesseramento){
 		$sql ="SELECT fk_anagrafica FROM mod_tesseramenti WHERE id = $idTesseramento";
 		$row =  $this->db->query($sql)->result_array();
 		return $row[0]['fk_anagrafica'];
 	}	
 
-
-
-	/**
-	* 
-	* Prelevo storico tesseramento per id anagrafica
-	* @param mixed $idTesseramento
-	* @return string
-	**/
 	public function getStoricoTesseramenti($fk_anagrafica){
 		$sql = "SELECT mod_tesseramenti.data_tesseramento, 
 					mod_tesseramenti.importo, 
@@ -303,10 +260,6 @@ class Mod_tesseramenti_model extends BaseModel
 	}
 
 
-	/**
-	 * 
-	 * Inserimento massivo tesserati
-	 */
 	public function insertPagamentiFromTesserati(){
 		
 		$sql = "SELECT * FROM mod_tesseramenti
@@ -322,18 +275,13 @@ class Mod_tesseramenti_model extends BaseModel
 
 			$sql = $this->db->set($data)->get_compiled_insert("_mod_pagamenti_tesseramenti");
 			$sql = str_replace('INSERT INTO', 'INSERT IGNORE INTO', $sql);
+			//echo $sql;
 			$this->db->query($sql);	
 		}
 
 	}
 
-	
-	/**
-	 * 
-	 * Aggiorno l'importo del tesseramento
-	 * @param string $id
-	 * @param float $importo
-	 */
+
 	public function update_importo_tesseramento($id, $importo){
         $this->db->where("fk_tesseramento", $id);
 		$data = array("importo" => $importo);
