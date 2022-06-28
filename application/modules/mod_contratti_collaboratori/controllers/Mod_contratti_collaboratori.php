@@ -1,9 +1,8 @@
 <?php
-if (!defined('BASEPATH')) {
+if (!defined('BASEPATH')){
 	exit('No direct script access allowed');
 }
 require APPPATH . '/libraries/BaseController.php';
-
 use Dompdf\Dompdf;
 
 class Mod_contratti_collaboratori extends BaseController
@@ -22,6 +21,11 @@ class Mod_contratti_collaboratori extends BaseController
 		$this->viewName_FormROAjax = 'mod_contratti_collaboratori_read_ajax';
 		$this->viewName_FormAjax = 'mod_contratti_collaboratori_form_ajax';
 
+
+		/*
+		//ABILITARE PER CUSTOMIZZAZIONE PER MODULO ERRORI SQL 
+		//IN CORSO MIGLIORIA PER GESTIRE I MESSAGGI TRAMITE TABELLA DI TRASCODIFICA
+		//SPOSTARE LOGICA NEL MODEL				
 		$this->MsgDBConverted['insert']['error']['1062'] = "Esiste gia questo elemento per il modulo Contratti Collaboratori";
 		$this->MsgDBConverted['insert']['error']['1452'] = "Esiste gia questo elemento per il modulo Contratti Collaboratori";
 		$this->MsgDBConverted['update']['error']['1062'] = "Esiste gia questo elemento per il modulo Contratti Collaboratori";
@@ -32,74 +36,75 @@ class Mod_contratti_collaboratori extends BaseController
 		$this->MsgDBConverted['update_massive']['error']['1452'] = "Esiste gia questo elemento per il modulo Contratti Collaboratori";
 		$this->MsgDBConverted['delete']['error']['1217'] = "Impossibile eliminare questo elemento del modulo Contratti Collaboratori. E' usato nei seguenti moduli:";
 		$this->MsgDBConverted['delete_massive']['error']['1217'] = "Impossibile eliminare alcuni elementi del modulo Contratti Collaboratori. Sono usati nei seguenti moduli:";
+		*/
 
-		//NOTE:NELLA FUNZIONE 'setFormFields' INDICARE NEL VETTORE CHE SI COLLEGA ALLA TABELLA REFERENZIATA
-		//ALLA CHIAVE 'NOME', IL NOMINATIVO DEL CAMPO COLLEGATO
+
 		$this->setFormFields('nome');
 		//PER L'ARRAY DI REFERENZIAMENTO, USARE IL CONCAT PER CONCATENARE PIU CAMPI NEL CAMPO 'NOME'
 		//ES.CONCAT(cognome," ",nome)
-		$this->setFormFields('fk_anagrafica', 'mod_anagrafica', array("id" => 'id', "nome" => 'CONCAT(nome," ",cognome)'), " WHERE mod_anagrafica.anagrafica_attributo LIKE '%INSEGNANTE%' or mod_anagrafica.anagrafica_attributo LIKE '%COLLABORATORE%' ");
+		$this->setFormFields('fk_anagrafica','mod_anagrafica',array("id" => 'id', "nome" => 'CONCAT(nome," ",cognome)')," WHERE mod_anagrafica.anagrafica_attributo LIKE '%INSEGNANTE%' or mod_anagrafica.anagrafica_attributo LIKE '%COLLABORATORE%' ");
 		$this->setFormFields('mansione');
 		$this->setFormFields('data_da');
 		$this->setFormFields('data_a');
 		$this->setFormFields('importo_mensile');
-		$this->setFormFields('fk_tipopagamento', 'mod_tipopagamento', array("id" => 'id', "nome" => "CONCAT(nome,'_',predefinito)"));
+		$this->setFormFields('fk_tipopagamento','mod_tipopagamento',array("id" => 'id', "nome" => "CONCAT(nome,'_',predefinito)"));
 		$this->setFormFields('banca');
 		$this->setFormFields('iban');
 		$this->setFormFields('id');
 		$this->setFormFields('data_firma_contratto');
 
-		$this->addMasterDetailsLoadFunc('getMasterDetail_mod_pagamenti_collaboratori', 'Pagamenti Collaboratore per questo contratto', 'getMasterDetail_mod_pagamenti_collaboratori');
-		//$this->addMasterDetailsLoadFunc('getMasterDetail_mod_contratti_collaboratori_corsi','Corsi Collaboratore per questo contratto','getMasterDetail_mod_contratti_collaboratori_corsi');
 
-		//ABILITARE PER LE OPERAZIONI "CUSTOM"
+		/**  RICHIAMO LE FUNZIONI PER IL CARICAMENTO DELLE MASTER DETAILS**/
+		$this->addMasterDetailsLoadFunc('getMasterDetail_mod_pagamenti_collaboratori','Pagamenti Collaboratore per questo contratto','getMasterDetail_mod_pagamenti_collaboratori');
 
-		//LA CHIAVE DEL VETTORE "custom_operations_list" RAPPRESENTA IL NOME DELLA FUNZIONE
-		//QUESTO PER AVERE UN CODICE ORDINATO E PER EVITARE CHE LE FUNZIONI CUSTOM NON VENGANO RICHIAMATE CORRETTAMENTE
-		$this->custom_operations_list['mod_contratti_collaboratori_check_date'] = function ($request, $id = NULL) {
+
+		/**  AREA LAMBDA FUNCTIONS - FUNZIONI RICHIAMATE in updateAjax, createAjax e nelle op. di CRUD master details**/		
+		$this->custom_operations_list['mod_contratti_collaboratori_check_date'] = function($request, $id = NULL){
 			$ret = $this->utilities->check_date_greater_then($request['data_da'], $request['data_a']);
-			if ($ret === FALSE) {
-				$this->session->set_flashdata('error', "Data Da non puo essere maggiore di Data a");
+			if($ret === FALSE){
+				$this->session->set_flashdata('error',"Data Da non puo essere maggiore di Data a");
 				return false;
-			}
+			}	
+			
+			$rangeDateEsistenti = $this->modelClassModule->isRangeDateEsistentiContratto($_REQUEST['fk_anagrafica'],$this->utilities->convertToDateEN($_REQUEST['data_da']), $this->utilities->convertToDateEN($_REQUEST['data_a']), $id);
+			if($rangeDateEsistenti['check'] == TRUE){
+				$this->session->set_flashdata('error',"Esiste gia un contratto per questa persona con queste date:Da <b>".$rangeDateEsistenti['data_da']."</b> A <b>".$rangeDateEsistenti['data_a']."</b><br>Selezionare Date con Range diverso");
+				return false;				 
+			}			
+					
+		}; 
 
-			$rangeDateEsistenti = $this->modelClassModule->isRangeDateEsistentiContratto($_REQUEST['fk_anagrafica'], $this->utilities->convertToDateEN($_REQUEST['data_da']), $this->utilities->convertToDateEN($_REQUEST['data_a']), $id);
-			if ($rangeDateEsistenti['check'] == TRUE) {
-				$this->session->set_flashdata('error', "Esiste gia un contratto per questa persona con queste date:Da <b>" . $rangeDateEsistenti['data_da'] . "</b> A <b>" . $rangeDateEsistenti['data_a'] . "</b><br>Selezionare Date con Range diverso");
-				return false;
-			}
-		};
-
-
-
-		$this->custom_form_data_functions['email'] = function ($request = NULL, $id = NULL) {
-			//print'<pre>';print_r($_REQUEST);
+  
+		//PRELEVO EMAIL COLLABORATORE
+		$this->custom_form_data_functions['email']= function($request = NULL, $id = NULL){
 			$email = "";
-			if ($id != NULL) {
+			if($id != NULL){
 				$email = $this->modelClassModule->getEmailCollaboratore($id);
 			} else {
-				if ((isset($_REQUEST['recordID'])) && ($_REQUEST['recordID'] != "")) {
+				if((isset($_REQUEST['recordID'])) && ($_REQUEST['recordID'] != "") ){
 					$email = $this->modelClassModule->getEmailCollaboratore($_REQUEST['recordID']);
 				}
 			}
-
+			
 			return $email;
-		};
+		}; 		
+
+
 	}
 
+	
 
 	/**
-	 * Funzione caricamento della master details, tabella _mod_pagamenti_collaboratori
-	 * @param mixed $id
-	 * @param string $isAjax
-	 * @return string
-	 **/
-	public function getMasterDetail_mod_pagamenti_collaboratori($id, $isAjax = 'FALSE')
-	{
+	* Funzione caricamento della master details, tabella _mod_pagamenti_collaboratori
+	* @param mixed $id
+	* @param string $isAjax
+	* @return string
+	**/
+	public function getMasterDetail_mod_pagamenti_collaboratori($id, $isAjax = 'FALSE'){
 		$row =  $this->modelClassModule->getMasterDetail_mod_pagamenti_collaboratori($id, $isAjax);
 		$html = '';
-		$winFormType = "form"; //VALORI ACCETTATI: {'multi','form'}
-
+		$winFormType ="form";//VALORI ACCETTATI: {'multi','form'}
+		
 		/*
 		if($isAjax == 'FALSE'){
 			if($winFormType == "form"){
@@ -126,11 +131,11 @@ class Mod_contratti_collaboratori extends BaseController
 							<input type='checkbox' id='check_master_mod_pagamenti_collaboratori' name='check_master_mod_pagamenti_collaboratori' 
 							onchange=\"selezionaDeselezionaTutti('check_master_mod_pagamenti_collaboratori','check_id_mod_pagamenti_collaboratori','btDeleteMass_mod_pagamenti_collaboratori')\">
 						</th>";
-		$html .= '<th>Data Pagamento</th>';
+		$html.='<th>Data Pagamento</th>';
 		//$html.='<th>Ora</th>';
-		$html .= '<th>Importo</th>';
-		$html .= '<th>Tipo Pagamento</th>';
-
+		$html.='<th>Importo</th>';
+		$html.='<th>Tipo Pagamento</th>';
+		
 		/*
 		if($winFormType == "form"){
 			$html.='<th>Modifica</th>';
@@ -138,16 +143,16 @@ class Mod_contratti_collaboratori extends BaseController
 		$html.='<th>Elimina</th>';
 		*/
 
-		$html .= '</tr>';
-		$html .= '<tbody>';
-		foreach ($row as $key => $value) {
-			$html .= "<tr>";
-			$html .= "<td><input type='checkbox' id='check_id_mod_pagamenti_collaboratori' name='check_id_mod_pagamenti_collaboratori' value='" . $value['id'] . "' onchange=\"verificaNrCheckBoxSelezionati('check_id_mod_pagamenti_collaboratori','btDeleteMass_mod_pagamenti_collaboratori')\"></td>";
-			$html .= "<td><input type='hidden' id='id[]' name='id[]' value='" . $value['id'] . "'>" . $this->utilities->convertToDateIT($value['datapagamento']) . "</td>";
+		$html.='</tr>';
+		$html.='<tbody>';
+		foreach($row as $key => $value){
+			$html.="<tr>";
+			$html.="<td><input type='checkbox' id='check_id_mod_pagamenti_collaboratori' name='check_id_mod_pagamenti_collaboratori' value='".$value['id']."' onchange=\"verificaNrCheckBoxSelezionati('check_id_mod_pagamenti_collaboratori','btDeleteMass_mod_pagamenti_collaboratori')\"></td>";
+			$html.="<td><input type='hidden' id='id[]' name='id[]' value='".$value['id']."'>".$this->utilities->convertToDateIT($value['datapagamento'])."</td>";
 			//$html.="<td><input type='hidden' id='id[]' name='id[]' value='".$value['id']."'>".substr($value['ora_pagamento'],0,-3)."</td>";
-			$html .= "<td><input type='hidden' id='id[]' name='id[]' value='" . $value['id'] . "'>" . $value['importo'] . "</td>";
-			$html .= "<td><input type='hidden' id='id[]' name='id[]' value='" . $value['id'] . "'>" . $value['mod_tipopagamento_nome'] . "</td>";
-
+			$html.="<td><input type='hidden' id='id[]' name='id[]' value='".$value['id']."'>".$value['importo']."</td>";
+			$html.="<td><input type='hidden' id='id[]' name='id[]' value='".$value['id']."'>".$value['mod_tipopagamento_nome']."</td>";
+			
 			/*
 			if($winFormType == "form"){
 				$html.="<td><a style='cursor:pointer' class='btn btn-sm btn-info' onclick ='winFormMasterDetails(\"mod_contratti_collaboratori\",\"winMasterDetail_mod_pagamenti_collaboratori\",\"edit\", $id,".$value['id'].",\"MODIFICA _mod_pagamenti_collaboratori\",arrayValidationFields)' title='Modifica _mod_pagamenti_collaboratori'><i class='fa fa-edit'></a></td>";
@@ -155,9 +160,9 @@ class Mod_contratti_collaboratori extends BaseController
  
 			$html.="<td><a style='cursor:pointer' class='btn btn-sm btn-danger deleteUser' onclick ='deleteMasterDetails(".$value['id'].", ".$id.", \"mod_contratti_collaboratori\",\"_mod_pagamenti_collaboratori\")' title='Elimina'><i class='fa fa-trash'></a></td>";
 			*/
-			$html .= '</tr>';
+			$html.='</tr>';
 		}
-		$html .= '</tbody></table>';
+		$html.='</tbody></table>';
 		/*
 		$html.='<br/><a class="btn btn-sm btn-danger deleteUser" id="btDeleteMass_mod_pagamenti_collaboratori" name="btDeleteMass_mod_pagamenti_collaboratori""
 					onclick="deleteMassiveMasterDetails('.$id.',\'entry_list\',\'check_id_mod_pagamenti_collaboratori\',\'mod_contratti_collaboratori\',\'_mod_pagamenti_collaboratori\')">
@@ -169,17 +174,16 @@ class Mod_contratti_collaboratori extends BaseController
 
 
 	/**
-	 * Funzione caricamento della master details, tabella _mod_contratti_collaboratori_corsi
-	 * @param mixed $id
-	 * @param string $isAjax
-	 * @return string
-	 **/
-	public function getMasterDetail_mod_contratti_collaboratori_corsi($id, $isAjax = 'FALSE')
-	{
+	* Funzione caricamento della master details, tabella _mod_contratti_collaboratori_corsi
+	* @param mixed $id
+	* @param string $isAjax
+	* @return string
+	**/
+	public function getMasterDetail_mod_contratti_collaboratori_corsi($id, $isAjax = 'FALSE'){
 		$row =  $this->modelClassModule->getMasterDetail_mod_contratti_collaboratori_corsi($id, $isAjax);
 		$html = '';
-		$winFormType = "form"; //VALORI ACCETTATI: {'multi','form'}
-
+		$winFormType ="form";//VALORI ACCETTATI: {'multi','form'}
+		
 		/*
 		if($isAjax == 'FALSE'){
 			if($winFormType == "form"){
@@ -207,25 +211,25 @@ class Mod_contratti_collaboratori extends BaseController
 							onchange=\"selezionaDeselezionaTutti('check_master_mod_contratti_collaboratori_corsi','check_id_mod_contratti_collaboratori_corsi','btDeleteMass_mod_contratti_collaboratori_corsi')\">
 						</th>";
 		//$html.='<th>Contratto</th>';
-		$html .= '<th>Corso</th>';
-		if ($winFormType == "form") {
-			//	$html.='<th>Modifica</th>';
+		$html.='<th>Corso</th>';
+		if($winFormType == "form"){
+		//	$html.='<th>Modifica</th>';
 		}
 		//$html.='<th>Elimina</th>';
-		$html .= '</tr>';
-		$html .= '<tbody>';
-		foreach ($row as $key => $value) {
-			$html .= "<tr>";
-			$html .= "<td><input type='checkbox' id='check_id_mod_contratti_collaboratori_corsi' name='check_id_mod_contratti_collaboratori_corsi' value='" . $value['id'] . "' onchange=\"verificaNrCheckBoxSelezionati('check_id_mod_contratti_collaboratori_corsi','btDeleteMass_mod_contratti_collaboratori_corsi')\"></td>";
+		$html.='</tr>';
+		$html.='<tbody>';
+		foreach($row as $key => $value){
+			$html.="<tr>";
+			$html.="<td><input type='checkbox' id='check_id_mod_contratti_collaboratori_corsi' name='check_id_mod_contratti_collaboratori_corsi' value='".$value['id']."' onchange=\"verificaNrCheckBoxSelezionati('check_id_mod_contratti_collaboratori_corsi','btDeleteMass_mod_contratti_collaboratori_corsi')\"></td>";
 			//$html.="<td><input type='hidden' id='id[]' name='id[]' value='".$value['id']."'>".$value['mod_contratti_collaboratori_nome']."</td>";
-			$html .= "<td><input type='hidden' id='id[]' name='id[]' value='" . $value['id'] . "'>" . $value['mod_corsi_nome'] . "</td>";
-			if ($winFormType == "form") {
-				//	$html.="<td><a style='cursor:pointer' class='btn btn-sm btn-info' onclick ='winFormMasterDetails(\"mod_contratti_collaboratori\",\"winMasterDetail_mod_contratti_collaboratori_corsi\",\"edit\", $id,".$value['id'].",\"MODIFICA _mod_contratti_collaboratori_corsi\",arrayValidationFields)' title='Modifica _mod_contratti_collaboratori_corsi'><i class='fa fa-edit'></a></td>";
+			$html.="<td><input type='hidden' id='id[]' name='id[]' value='".$value['id']."'>".$value['mod_corsi_nome']."</td>";
+			if($winFormType == "form"){
+			//	$html.="<td><a style='cursor:pointer' class='btn btn-sm btn-info' onclick ='winFormMasterDetails(\"mod_contratti_collaboratori\",\"winMasterDetail_mod_contratti_collaboratori_corsi\",\"edit\", $id,".$value['id'].",\"MODIFICA _mod_contratti_collaboratori_corsi\",arrayValidationFields)' title='Modifica _mod_contratti_collaboratori_corsi'><i class='fa fa-edit'></a></td>";
 			}
 			//$html.="<td><a style='cursor:pointer' class='btn btn-sm btn-danger deleteUser' onclick ='deleteMasterDetails(".$value['id'].", ".$id.", \"mod_contratti_collaboratori\",\"_mod_contratti_collaboratori_corsi\")' title='Elimina'><i class='fa fa-trash'></a></td>";
-			$html .= '</tr>';
+			$html.='</tr>';
 		}
-		$html .= '</tbody></table>';
+		$html.='</tbody></table>';
 		/*
 		$html.='<br/><a class="btn btn-sm btn-danger deleteUser" id="btDeleteMass_mod_contratti_collaboratori_corsi" name="btDeleteMass_mod_contratti_collaboratori_corsi""
 					onclick="deleteMassiveMasterDetails('.$id.',\'entry_list\',\'check_id_mod_contratti_collaboratori_corsi\',\'mod_contratti_collaboratori\',\'_mod_contratti_collaboratori_corsi\')">
@@ -237,15 +241,14 @@ class Mod_contratti_collaboratori extends BaseController
 
 
 	/**
-	 * Funzione caricamento della finestra per la master details, tabella _mod_pagamenti_collaboratori
-	 * @param mixed $action
-	 * @param string $entryID
-	 * @param string $entryIDMasterDetails
-	 * @return string
-	 **/
-	public function winMasterDetail_mod_pagamenti_collaboratori($action, $entryID, $entryIDMasterDetails = NULL)
-	{
-		if ($entryIDMasterDetails == 'NULL') {
+	* Funzione caricamento della finestra per la master details, tabella _mod_pagamenti_collaboratori
+	* @param mixed $action
+	* @param string $entryID
+	* @param string $entryIDMasterDetails
+	* @return string
+	**/
+	public function winMasterDetail_mod_pagamenti_collaboratori($action, $entryID, $entryIDMasterDetails = NULL){
+		if($entryIDMasterDetails == 'NULL'){
 			$entryIDMasterDetails = '';
 		}
 		$rowWinForm = $this->modelClassModule->get_from_master_details_by_id($entryIDMasterDetails, '_mod_pagamenti_collaboratori', 'id');
@@ -259,62 +262,62 @@ class Mod_contratti_collaboratori extends BaseController
 								</div>									
 									<form  name="frm_master_detail" id="frm_master_detail">
 									<input type="hidden" id="table" name="table" value="_mod_pagamenti_collaboratori">
-									<input type="hidden" id="action" name="action" value="' . $action . '"/> 
+									<input type="hidden" id="action" name="action" value="'.$action.'"/> 
 									<input type="hidden" id="saveType" name="saveType" value="form"/> 	
-									<input type="hidden" id="entryID"          name="entryID"  value="' . $entryID . '">
-									<input type="hidden" id="fk_contratto"          name="fk_contratto"  value="' . $entryID . '">
-									<input type="hidden" id="entryIDMasterDetails" 		name="entryIDMasterDetails" value="' . $entryIDMasterDetails . '" >															
+									<input type="hidden" id="entryID"          name="entryID"  value="'.$entryID.'">
+									<input type="hidden" id="fk_contratto"          name="fk_contratto"  value="'.$entryID.'">
+									<input type="hidden" id="entryIDMasterDetails" 		name="entryIDMasterDetails" value="'.$entryIDMasterDetails.'" >															
 										<div class="col-md-12">
 											<div class="form-group">';
-
+ 
 		$html .= '<div class="form-group">';
-
+									
 		$html .= '<label for="date"><b style="color:#990000">(*)</b>Data Pagamento </label>';
-
+									
 		$html .= '<div class="input-group">';
-
-		$html .= '<div class="input-group-addon"><i class="fa fa-calendar"></i></div>';
-
+									
+		$html .= '<div class="input-group-addon"><i class="fa fa-calendar"></i></div>';			
+									
 		$html .= '<input type="text" class="form-control datemask" name="datapagamento" id="datapagamento" placeholder="Data Pagamento"';
-
-		$html .= 'autocomplete="off" style="background-color:#FFFFFF" value="' . $this->utilities->convertToDateIT($rowWinForm['datapagamento']) . '" />';
-
+									
+		$html .= 'autocomplete="off" style="background-color:#FFFFFF" value="'.$this->utilities->convertToDateIT($rowWinForm['datapagamento']).'" />';
+									
 		$html .= '</div></div>';
 		$html .= '<div class="form-group">';
-
+									
 		$html .= '<label for="time"><b style="color:#990000">(*)</b>Ora </label>';
-
+									
 		$html .= '			<div class="input-group">';
-
-		$html .= '				<div class="input-group-addon"><i class="fa fa-calendar"></i></div>';
-
-		$html .= '<input type="text" class="form-control timemask" name="ora_pagamento" id="ora_pagamento" placeholder="Ora" autocomplete="off" value="' . $rowWinForm['ora_pagamento'] . '" />';
-
+									
+		$html .= '				<div class="input-group-addon"><i class="fa fa-calendar"></i></div>';	
+									
+		$html .= '<input type="text" class="form-control timemask" name="ora_pagamento" id="ora_pagamento" placeholder="Ora" autocomplete="off" value="'.$rowWinForm['ora_pagamento'].'" />';
+									
 		$html .= '</div></div>';
 		$html .= ' <div class="form-group">';
-
+						
 		$html .= '<label for="float"><b style="color:#990000">(*)</b>Importo </label>';
-
+						
 		$html .= '<div class="input-group">';
-
-		$html .= '<div class="input-group-addon"><i class="fa fa-sort-numeric-asc"></i></div>';
-
-		$html .= '<input type="number" class="form-control" maxlength=\'10\' name="importo" id="importo" placeholder="Importo" autocomplete="off" value="' . $rowWinForm['importo'] . '" step=0.01 />';
-
+						
+		$html .= '<div class="input-group-addon"><i class="fa fa-sort-numeric-asc"></i></div>';			
+						
+		$html .= '<input type="number" class="form-control" maxlength=\'10\' name="importo" id="importo" placeholder="Importo" autocomplete="off" value="'.$rowWinForm['importo'].'" step=0.01 />';
+						
 		$html .= '</div></div>';
-		$fk_tipopagamento_refval = $this->modelClassModule->getValuesByFk('mod_tipopagamento', NULL, NULL);
+		$fk_tipopagamento_refval = $this->modelClassModule->getValuesByFk('mod_tipopagamento',NULL, NULL);
 		$html .= '<div class="form-group">';
-
-		$fk_tipopagamento_label = NULL;
-		foreach ($fk_tipopagamento_refval as $key => $value) {
-			if ($value['id'] == $rowWinForm['fk_tipopagamento']) {
-				$fk_tipopagamento_label = $value['nome'];
-			}
-		}
-
-
+		 
+							$fk_tipopagamento_label = NULL;
+							foreach ($fk_tipopagamento_refval as $key => $value) {
+								if ($value['id'] == $rowWinForm['fk_tipopagamento']) {
+									$fk_tipopagamento_label = $value['nome'];
+								}  
+							}
+				 						
+							
 		$html .= '<label for="fk_tipopagamento"><b style="color:#990000">(*)</b>Tipo Pagamento </label>';
-
+							
 		$html .= "							
 							
 		<input autofocus class='form-control' autocomplete='off' 
@@ -327,34 +330,33 @@ class Mod_contratti_collaboratori extends BaseController
 								name='fk_tipopagamento_datalist_inp' 
 								id='fk_tipopagamento_datalist_inp' value='$fk_tipopagamento_label'>
 							
-		<input type='hidden' name='fk_tipopagamento' id='fk_tipopagamento' value='" . $rowWinForm['fk_tipopagamento'] . "' >
+		<input type='hidden' name='fk_tipopagamento' id='fk_tipopagamento' value='".$rowWinForm['fk_tipopagamento']."' >
 							
-		<datalist name='fk_tipopagamento_datalist' id='fk_tipopagamento_datalist' >";
-		$html .= '<OPTION VALUE></OPTION>';
+		<datalist name='fk_tipopagamento_datalist' id='fk_tipopagamento_datalist' >";	$html .= '<OPTION VALUE></OPTION>';
 
 		foreach ($fk_tipopagamento_refval as $key => $value) {
 			if ($value['id'] == $rowWinForm['fk_tipopagamento']) {
 				$html .= "<option data-value='" . $value['id'] . "' SELECTED>" . $value['nome'] . "</option>";
 			} else {
-				$html .= "<option data-value='" . $value['id'] . "'>" . $value['nome'] . "</option>";
+				$html .= "<option data-value='".$value['id'] . "'>" . $value['nome'] . "</option>";
 			}
 		}
 		$html .= '</SELECT>';
-
+										
 		$html .= '</div>';
-		$fk_causale_pagamento_refval = $this->modelClassModule->getValuesByFk('mod_causali_pagamento', NULL, NULL);
+		$fk_causale_pagamento_refval = $this->modelClassModule->getValuesByFk('mod_causali_pagamento',NULL, NULL);
 		$html .= '<div class="form-group">';
-
-		$fk_causale_pagamento_label = NULL;
-		foreach ($fk_causale_pagamento_refval as $key => $value) {
-			if ($value['id'] == $rowWinForm['fk_causale_pagamento']) {
-				$fk_causale_pagamento_label = $value['nome'];
-			}
-		}
-
-
+		 
+							$fk_causale_pagamento_label = NULL;
+							foreach ($fk_causale_pagamento_refval as $key => $value) {
+								if ($value['id'] == $rowWinForm['fk_causale_pagamento']) {
+									$fk_causale_pagamento_label = $value['nome'];
+								}  
+							}
+				 						
+							
 		$html .= '<label for="fk_causale_pagamento"><b style="color:#990000">(*)</b>Causale Pagamento </label>';
-
+							
 		$html .= "							
 							
 		<input autofocus class='form-control' autocomplete='off' 
@@ -367,27 +369,26 @@ class Mod_contratti_collaboratori extends BaseController
 								name='fk_causale_pagamento_datalist_inp' 
 								id='fk_causale_pagamento_datalist_inp' value='$fk_causale_pagamento_label'>
 							
-		<input type='hidden' name='fk_causale_pagamento' id='fk_causale_pagamento' value='" . $rowWinForm['fk_causale_pagamento'] . "' >
+		<input type='hidden' name='fk_causale_pagamento' id='fk_causale_pagamento' value='".$rowWinForm['fk_causale_pagamento']."' >
 							
-		<datalist name='fk_causale_pagamento_datalist' id='fk_causale_pagamento_datalist' >";
-		$html .= '<OPTION VALUE></OPTION>';
+		<datalist name='fk_causale_pagamento_datalist' id='fk_causale_pagamento_datalist' >";	$html .= '<OPTION VALUE></OPTION>';
 
 		foreach ($fk_causale_pagamento_refval as $key => $value) {
 			if ($value['id'] == $rowWinForm['fk_causale_pagamento']) {
 				$html .= "<option data-value='" . $value['id'] . "' SELECTED>" . $value['nome'] . "</option>";
 			} else {
-				$html .= "<option data-value='" . $value['id'] . "'>" . $value['nome'] . "</option>";
+				$html .= "<option data-value='".$value['id'] . "'>" . $value['nome'] . "</option>";
 			}
 		}
 		$html .= '</SELECT>';
-
+										
 		$html .= '</div>';
 		$html .= '<div class="form-group">';
-
+									
 		$html .= '<label for="notepagamento">Note</label>';
-
-		$html .= '<textarea class="form-control" rows="3" name="notepagamento" id="notepagamento" placeholder="Note">' . $rowWinForm['notepagamento'] . '</textarea>';
-
+									
+		$html .= '<textarea class="form-control" rows="3" name="notepagamento" id="notepagamento" placeholder="Note">'.$rowWinForm['notepagamento'].'</textarea>';
+									
 		$html .= '</div>';
 		$html .= '
 											</div>													
@@ -405,15 +406,14 @@ class Mod_contratti_collaboratori extends BaseController
 
 
 	/**
-	 * Funzione caricamento della finestra per la master details, tabella _mod_contratti_collaboratori_corsi
-	 * @param mixed $action
-	 * @param string $entryID
-	 * @param string $entryIDMasterDetails
-	 * @return string
-	 **/
-	public function winMasterDetail_mod_contratti_collaboratori_corsi($action, $entryID, $entryIDMasterDetails = NULL)
-	{
-		if ($entryIDMasterDetails == 'NULL') {
+	* Funzione caricamento della finestra per la master details, tabella _mod_contratti_collaboratori_corsi
+	* @param mixed $action
+	* @param string $entryID
+	* @param string $entryIDMasterDetails
+	* @return string
+	**/
+	public function winMasterDetail_mod_contratti_collaboratori_corsi($action, $entryID, $entryIDMasterDetails = NULL){
+		if($entryIDMasterDetails == 'NULL'){
 			$entryIDMasterDetails = '';
 		}
 		$rowWinForm = $this->modelClassModule->get_from_master_details_by_id($entryIDMasterDetails, '_mod_contratti_collaboratori_corsi', 'id');
@@ -427,27 +427,27 @@ class Mod_contratti_collaboratori extends BaseController
 								</div>									
 									<form  name="frm_master_detail" id="frm_master_detail">
 									<input type="hidden" id="table" name="table" value="_mod_contratti_collaboratori_corsi">
-									<input type="hidden" id="action" name="action" value="' . $action . '"/> 
+									<input type="hidden" id="action" name="action" value="'.$action.'"/> 
 									<input type="hidden" id="saveType" name="saveType" value="form"/> 	
-									<input type="hidden" id="entryID"          name="entryID"  value="' . $entryID . '">
-									<input type="hidden" id="fk_contratto"          name="fk_contratto"  value="' . $entryID . '">
-									<input type="hidden" id="entryIDMasterDetails" 		name="entryIDMasterDetails" value="' . $entryIDMasterDetails . '" >															
+									<input type="hidden" id="entryID"          name="entryID"  value="'.$entryID.'">
+									<input type="hidden" id="fk_contratto"          name="fk_contratto"  value="'.$entryID.'">
+									<input type="hidden" id="entryIDMasterDetails" 		name="entryIDMasterDetails" value="'.$entryIDMasterDetails.'" >															
 										<div class="col-md-12">
 											<div class="form-group">';
 
-		$fk_corso_refval = $this->modelClassModule->getValuesByFk('mod_corsi', NULL, NULL);
+		$fk_corso_refval = $this->modelClassModule->getValuesByFk('mod_corsi',NULL, NULL);
 		$html .= '<div class="form-group">';
-
-		$fk_corso_label = NULL;
-		foreach ($fk_corso_refval as $key => $value) {
-			if ($value['id'] == $rowWinForm['fk_corso']) {
-				$fk_corso_label = $value['nome'];
-			}
-		}
-
-
+		 
+							$fk_corso_label = NULL;
+							foreach ($fk_corso_refval as $key => $value) {
+								if ($value['id'] == $rowWinForm['fk_corso']) {
+									$fk_corso_label = $value['nome'];
+								}  
+							}
+				 						
+							
 		$html .= '<label for="fk_corso"><b style="color:#990000">(*)</b>Corso </label>';
-
+							
 		$html .= "							
 							
 		<input autofocus class='form-control' autocomplete='off' 
@@ -460,20 +460,19 @@ class Mod_contratti_collaboratori extends BaseController
 								name='fk_corso_datalist_inp' 
 								id='fk_corso_datalist_inp' value='$fk_corso_label'>
 							
-		<input type='hidden' name='fk_corso' id='fk_corso' value='" . $rowWinForm['fk_corso'] . "' >
+		<input type='hidden' name='fk_corso' id='fk_corso' value='".$rowWinForm['fk_corso']."' >
 							
-		<datalist name='fk_corso_datalist' id='fk_corso_datalist' >";
-		$html .= '<OPTION VALUE></OPTION>';
+		<datalist name='fk_corso_datalist' id='fk_corso_datalist' >";	$html .= '<OPTION VALUE></OPTION>';
 
 		foreach ($fk_corso_refval as $key => $value) {
 			if ($value['id'] == $rowWinForm['fk_corso']) {
 				$html .= "<option data-value='" . $value['id'] . "' SELECTED>" . $value['nome'] . "</option>";
 			} else {
-				$html .= "<option data-value='" . $value['id'] . "'>" . $value['nome'] . "</option>";
+				$html .= "<option data-value='".$value['id'] . "'>" . $value['nome'] . "</option>";
 			}
 		}
 		$html .= '</SELECT>';
-
+										
 		$html .= '</div>';
 		$html .= '
 											</div>													
@@ -491,13 +490,12 @@ class Mod_contratti_collaboratori extends BaseController
 
 
 	/**
-	 * Funzione caricamento della finestra per la master details,in modalita di inserimento multiplo, tabella _mod_pagamenti_collaboratori
-	 * @param mixed $action
-	 * @param string $entryID
-	 * @return string
-	 **/
-	public function winMasterDetailMulti_mod_pagamenti_collaboratori($action, $entryID)
-	{
+	* Funzione caricamento della finestra per la master details,in modalita di inserimento multiplo, tabella _mod_pagamenti_collaboratori
+	* @param mixed $action
+	* @param string $entryID
+	* @return string
+	**/
+	public function winMasterDetailMulti_mod_pagamenti_collaboratori($action, $entryID){
 		$html = '<div>
 				<section class="content">
 					<div class="row">
@@ -508,9 +506,9 @@ class Mod_contratti_collaboratori extends BaseController
 								</div>									
 									<form  name="frm_master_detail" id="frm_master_detail">
 									<input type="hidden" id="table" name="table" value="_mod_pagamenti_collaboratori">
-									<input type="hidden" id="action" name="action" value="' . $action . '"/> 
+									<input type="hidden" id="action" name="action" value="'.$action.'"/> 
 									<input type="hidden" id="saveType" name="saveType" value="form"/> 	
-									<input type="hidden" id="entryID"          name="entryID"  value="' . $entryID . '">													
+									<input type="hidden" id="entryID"          name="entryID"  value="'.$entryID.'">													
 										<div class="col-md-12">
 											<div class="form-group">';
 		$html .= '
@@ -529,13 +527,12 @@ class Mod_contratti_collaboratori extends BaseController
 
 
 	/**
-	 * Funzione caricamento della finestra per la master details,in modalita di inserimento multiplo, tabella _mod_contratti_collaboratori_corsi
-	 * @param mixed $action
-	 * @param string $entryID
-	 * @return string
-	 **/
-	public function winMasterDetailMulti_mod_contratti_collaboratori_corsi($action, $entryID)
-	{
+	* Funzione caricamento della finestra per la master details,in modalita di inserimento multiplo, tabella _mod_contratti_collaboratori_corsi
+	* @param mixed $action
+	* @param string $entryID
+	* @return string
+	**/
+	public function winMasterDetailMulti_mod_contratti_collaboratori_corsi($action, $entryID){
 		$html = '<div>
 				<section class="content">
 					<div class="row">
@@ -546,9 +543,9 @@ class Mod_contratti_collaboratori extends BaseController
 								</div>									
 									<form  name="frm_master_detail" id="frm_master_detail">
 									<input type="hidden" id="table" name="table" value="_mod_contratti_collaboratori_corsi">
-									<input type="hidden" id="action" name="action" value="' . $action . '"/> 
+									<input type="hidden" id="action" name="action" value="'.$action.'"/> 
 									<input type="hidden" id="saveType" name="saveType" value="form"/> 	
-									<input type="hidden" id="entryID"          name="entryID"  value="' . $entryID . '">													
+									<input type="hidden" id="entryID"          name="entryID"  value="'.$entryID.'">													
 										<div class="col-md-12">
 											<div class="form-group">';
 		$html .= '
@@ -571,8 +568,7 @@ class Mod_contratti_collaboratori extends BaseController
 	 * Stampa a video, richiamando il metodo stampa_out e salva sul server
 	 * @param mixed $id
 	 */
-	public function stampa($id)
-	{
+	public function stampa($id){
 
 		if (!file_exists(FCPATH . "/stampe/" . $this->mod_name)) {
 			$oldmask = umask(0);
@@ -580,8 +576,8 @@ class Mod_contratti_collaboratori extends BaseController
 			umask($oldmask);
 		}
 		$out = $this->stampa_out($id);
-		file_put_contents(FCPATH . "/stampe/" . $this->mod_name . '/' . $id . '.pdf', $out);
-	}
+		file_put_contents(FCPATH . "/stampe/" . $this->mod_name . '/' . $id .'.pdf', $out);
+	}	
 
 
 	/**
@@ -614,8 +610,8 @@ class Mod_contratti_collaboratori extends BaseController
 				'company_phone' => set_value('company_phone', $company_phone),
 				'company_address' => set_value('company_address', $company_address),
 				'company_logo' => set_value('company_logo', $company_logo),
-			);
-			foreach ($row as $k => $v) {
+			);			
+			foreach($row as $k => $v){
 				$data[$k] = $v;
 			}
 			//print'<pre>';print_r($data);die();
@@ -674,5 +670,7 @@ class Mod_contratti_collaboratori extends BaseController
 
 		$this->form_validation->set_rules('id', 'id', 'trim');
 		$this->form_validation->set_error_delimiters('<span class="text-danger">', '</span>');
+
 	}
+
 }

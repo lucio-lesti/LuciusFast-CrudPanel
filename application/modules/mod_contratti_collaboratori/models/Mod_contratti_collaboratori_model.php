@@ -1,5 +1,5 @@
 <?php
-if (!defined('BASEPATH')) {
+if (!defined('BASEPATH')){
 	exit('No direct script access allowed');
 }
 
@@ -8,8 +8,7 @@ require APPPATH . '/libraries/BaseModel.php';
 class Mod_contratti_collaboratori_model extends BaseModel
 {
 
-	public function __construct()
-	{
+	public function __construct(){
 		parent::__construct();
 		$this->table = 'mod_contratti_collaboratori';
 		$this->id = 'id';
@@ -21,22 +20,40 @@ class Mod_contratti_collaboratori_model extends BaseModel
 		//ALLA CHIAVE 'NOME', IL NOMINATIVO DEL CAMPO COLLEGATO
 
 		$this->setFieldArrayGrid('nome', FIELD_STRING);
-		$this->setFieldArrayGrid('fk_anagrafica', FIELD_NUMERIC, 'mod_anagrafica', array("id" => 'id', "nome" => array("nome", " ", "cognome")), "mod_anagrafica_nome");
+		//$this->setFieldArrayGrid('fk_anagrafica',FIELD_NUMERIC,'mod_anagrafica',array("id" => 'id', "nome" => 'nome'));	
+		
+		//NOTE 2:NELLA FUNZIONE 'setFieldArrayGrid' se nella chiave "nome" si usa una array, la classe "BaseModel" lo interpreta come un concat
+		$this->setFieldArrayGrid('fk_anagrafica',FIELD_NUMERIC,'mod_anagrafica',array("id" => 'id', "nome" => array("nome"," ","cognome")), "mod_anagrafica_nome");
+		//$this->setFieldArrayGrid('fk_anagrafica',FIELD_NUMERIC,'mod_anagrafica',array("id" => 'id', "nome" => "CONCAT(nome,' ', cognome)" ), "nome");
+
+		$this->setFieldArrayGrid('mansione', FIELD_STRING);
+		$this->setFieldArrayGrid('data_firma_contratto', FIELD_DATE);
 		$this->setFieldArrayGrid('data_da', FIELD_DATE);
 		$this->setFieldArrayGrid('data_a', FIELD_DATE);
+		$this->setFieldArrayGrid('importo_mensile', FIELD_FLOAT);
+
+		$this->setFieldArrayGrid('fk_tipopagamento',FIELD_NUMERIC,'mod_tipopagamento',array("id" => 'id', "nome" => "nome"));
+
+		$this->setFieldArrayGrid('banca', FIELD_STRING);
+		$this->setFieldArrayGrid('iban', FIELD_STRING);
 		$this->setFieldArrayGrid('id', FIELD_NUMERIC);
+
+
+		//ESEMPIO DI TABELLA REFERENZIATA CHE NON HA IL CAMPO 'NOME'. QUI INDICHIAMO AL PROGRAMMA QUALE E' IL CAMPO DA USARE COME CAMPO 'NOME'
+		//P.S.QUESTA OPERAZIONE E' POSSIBILE FARLA ANCHE NEL METODO 'setFieldArrayGrid'
+		//$this->arrayColumnsReferenced['mod_sport']['nome'] = "sport"; 
+
 	}
 
 
 	/**
-	 * Funzione caricamento della master details, tabella _mod_pagamenti_collaboratori
-	 * @param mixed $id
-	 * @param string $isAjax
-	 * @return string
-	 **/
-	public function getMasterDetail_mod_pagamenti_collaboratori($id, $isAjax = 'FALSE')
-	{
-		$sql = "SELECT _mod_pagamenti_collaboratori.* 
+	* Funzione caricamento della master details, tabella _mod_pagamenti_collaboratori
+	* @param mixed $id
+	* @param string $isAjax
+	* @return string
+	**/
+	public function getMasterDetail_mod_pagamenti_collaboratori($id, $isAjax = 'FALSE'){
+		$sql ="SELECT _mod_pagamenti_collaboratori.* 
 				,mod_contratti_collaboratori.nome AS mod_contratti_collaboratori_nome
 				,mod_tipopagamento.nome AS mod_tipopagamento_nome
 				,mod_causali_pagamento.nome AS mod_causali_pagamento_nome
@@ -47,21 +64,20 @@ class Mod_contratti_collaboratori_model extends BaseModel
 							ON _mod_pagamenti_collaboratori.fk_tipopagamento = mod_tipopagamento.id
 			 INNER JOIN mod_causali_pagamento
 							ON _mod_pagamenti_collaboratori.fk_causale_pagamento = mod_causali_pagamento.id
-			WHERE _mod_pagamenti_collaboratori.fk_contratto = " . $id;
-		$row =  $this->db->query($sql)->result_array();
+			WHERE _mod_pagamenti_collaboratori.fk_contratto = ".$id;
+		$row =  $this->db->query($sql)->result_array();	
 		return $row;
 	}
 
 
 	/**
-	 * Funzione caricamento della master details, tabella _mod_contratti_collaboratori_corsi
-	 * @param mixed $id
-	 * @param string $isAjax
-	 * @return string
-	 **/
-	public function getMasterDetail_mod_contratti_collaboratori_corsi($id, $isAjax = 'FALSE')
-	{
-		$sql = "SELECT _mod_contratti_collaboratori_corsi.* 
+	* Funzione caricamento della master details, tabella _mod_contratti_collaboratori_corsi
+	* @param mixed $id
+	* @param string $isAjax
+	* @return string
+	**/
+	public function getMasterDetail_mod_contratti_collaboratori_corsi($id, $isAjax = 'FALSE'){
+		$sql ="SELECT _mod_contratti_collaboratori_corsi.* 
 				,mod_contratti_collaboratori.nome AS mod_contratti_collaboratori_nome
 				,mod_corsi.nome AS mod_corsi_nome
 			FROM _mod_contratti_collaboratori_corsi
@@ -69,21 +85,20 @@ class Mod_contratti_collaboratori_model extends BaseModel
 							ON _mod_contratti_collaboratori_corsi.fk_contratto = mod_contratti_collaboratori.id
 			 INNER JOIN mod_corsi
 							ON _mod_contratti_collaboratori_corsi.fk_corso = mod_corsi.id
-			WHERE _mod_contratti_collaboratori_corsi.fk_contratto = " . $id;
-		$row =  $this->db->query($sql)->result_array();
+			WHERE _mod_contratti_collaboratori_corsi.fk_contratto = ".$id;
+		$row =  $this->db->query($sql)->result_array();	
 		return $row;
 	}
 
 
 	/**
-	 * Funzione caricamento delle liste per inserimento multiplo master details, tabella _mod_pagamenti_collaboratori
-	 * @param mixed $id
-	 * @param string $isAjax
-	 * @return string
-	 **/
-	public function getList_mod_pagamenti_collaboratori($id, $isAjax = 'FALSE')
-	{
-		$sql = "SELECT _mod_pagamenti_collaboratori.* 
+	* Funzione caricamento delle liste per inserimento multiplo master details, tabella _mod_pagamenti_collaboratori
+	* @param mixed $id
+	* @param string $isAjax
+	* @return string
+	**/
+	public function getList_mod_pagamenti_collaboratori($id, $isAjax = 'FALSE'){
+		$sql ="SELECT _mod_pagamenti_collaboratori.* 
 			,mod_contratti_collaboratori.nome AS mod_contratti_collaboratori_nome
 			,mod_tipopagamento.nome AS mod_tipopagamento_nome
 			,mod_causali_pagamento.nome AS mod_causali_pagamento_nome
@@ -94,21 +109,20 @@ class Mod_contratti_collaboratori_model extends BaseModel
 							ON _mod_pagamenti_collaboratori.fk_tipopagamento = mod_tipopagamento.id
 				 INNER JOIN mod_causali_pagamento
 							ON _mod_pagamenti_collaboratori.fk_causale_pagamento = mod_causali_pagamento.id
-			WHERE _mod_pagamenti_collaboratori.fk_contratto = " . $id;
-		$row =  $this->db->query($sql)->result_array();
+			WHERE _mod_pagamenti_collaboratori.fk_contratto = ".$id;
+		$row =  $this->db->query($sql)->result_array();	
 		return $row;
 	}
 
 
 	/**
-	 * Funzione caricamento delle liste per inserimento multiplo master details, tabella _mod_contratti_collaboratori_corsi
-	 * @param mixed $id
-	 * @param string $isAjax
-	 * @return string
-	 **/
-	public function getList_mod_contratti_collaboratori_corsi($id, $isAjax = 'FALSE')
-	{
-		$sql = "SELECT _mod_contratti_collaboratori_corsi.* 
+	* Funzione caricamento delle liste per inserimento multiplo master details, tabella _mod_contratti_collaboratori_corsi
+	* @param mixed $id
+	* @param string $isAjax
+	* @return string
+	**/
+	public function getList_mod_contratti_collaboratori_corsi($id, $isAjax = 'FALSE'){
+		$sql ="SELECT _mod_contratti_collaboratori_corsi.* 
 			,mod_contratti_collaboratori.nome AS mod_contratti_collaboratori_nome
 			,mod_corsi.nome AS mod_corsi_nome
 					FROM _mod_contratti_collaboratori_corsi
@@ -116,8 +130,8 @@ class Mod_contratti_collaboratori_model extends BaseModel
 							ON _mod_contratti_collaboratori_corsi.fk_contratto = mod_contratti_collaboratori.id
 				 INNER JOIN mod_corsi
 							ON _mod_contratti_collaboratori_corsi.fk_corso = mod_corsi.id
-			WHERE _mod_contratti_collaboratori_corsi.fk_contratto = " . $id;
-		$row =  $this->db->query($sql)->result_array();
+			WHERE _mod_contratti_collaboratori_corsi.fk_contratto = ".$id;
+		$row =  $this->db->query($sql)->result_array();	
 		return $row;
 	}
 
@@ -127,10 +141,9 @@ class Mod_contratti_collaboratori_model extends BaseModel
 	 * @param mixed $fkAnagrafica
 	 * @return void
 	 */
-	public function getAnagrafica($fkAnagrafica)
-	{
-		$sql = "SELECT * FROM mod_anagrafica WHERE id =" . $fkAnagrafica;
-		$row =  $this->db->query($sql)->result_array();
+	public function getAnagrafica($fkAnagrafica){
+		$sql ="SELECT * FROM mod_anagrafica WHERE id =".$fkAnagrafica;
+		$row =  $this->db->query($sql)->result_array();	
 		return $row;
 	}
 
@@ -141,12 +154,11 @@ class Mod_contratti_collaboratori_model extends BaseModel
 	 * @param mixed $fkAnagrafica
 	 * @return void
 	 */
-	public function getComune($fkComune)
-	{
-		$sql = "SELECT * FROM mod_comuni WHERE istat =" . $fkComune;
-		$row =  $this->db->query($sql)->result_array();
+	public function getComune($fkComune){
+		$sql ="SELECT * FROM mod_comuni WHERE istat =".$fkComune;
+		$row =  $this->db->query($sql)->result_array();	
 		return $row;
-	}
+	}	
 
 
 	/**
@@ -155,20 +167,19 @@ class Mod_contratti_collaboratori_model extends BaseModel
 	 * @param mixed $fkAnagrafica
 	 * @return void
 	 */
-	public function isRangeDateEsistentiContratto($fkAnagrafica, $dataDa, $dataA, $idContratto = NULL)
-	{
+	public function isRangeDateEsistentiContratto($fkAnagrafica, $dataDa, $dataA, $idContratto = NULL){
 		$rangeDateEsistenti = array();
 		$sql = "SELECT count(*) AS counter_r,
 					DATE_FORMAT(data_da, \"%d/%m/%Y\") as data_da,
 					DATE_FORMAT(data_a, \"%d/%m/%Y\") as data_a 
 					FROM `mod_contratti_collaboratori` 
 					WHERE  fk_anagrafica = $fkAnagrafica";
-		if ($idContratto != NULL) {
-			$sql .= " AND id <> " . $idContratto;
-		}
+		if($idContratto != NULL){
+			$sql .= " AND id <> ".$idContratto;		
+		}			
 		$sql .= " AND  (data_da BETWEEN '$dataDa' AND '$dataA' OR data_a BETWEEN '$dataDa' AND '$dataA')
 				GROUP BY data_da,data_a";
-		$row =  $this->db->query($sql)->result_array();
+		$row =  $this->db->query($sql)->result_array();	
 
 		//echo $sql;		
 		//print'<pre>';print_r($row);die();
@@ -177,12 +188,12 @@ class Mod_contratti_collaboratori_model extends BaseModel
 		$rangeDateEsistenti["data_da"] = NULL;
 		$rangeDateEsistenti["data_a"] = NULL;
 
-		if (isset($row[0]['counter_r'])) {
-			if ((int)$row[0]['counter_r'] > 0) {
+		if(isset($row[0]['counter_r'])){
+			if((int)$row[0]['counter_r'] > 0){
 				$rangeDateEsistenti["check"] = TRUE;
 			}
 			$rangeDateEsistenti["data_da"] = $row[0]['data_da'];
-			$rangeDateEsistenti["data_a"] = $row[0]['data_a'];
+			$rangeDateEsistenti["data_a"] = $row[0]['data_a'];			
 		}
 
 
@@ -191,27 +202,25 @@ class Mod_contratti_collaboratori_model extends BaseModel
 
 
 
-	public function getEmailCollaboratore($id)
-	{
+	public function getEmailCollaboratore($id){
 		$email = "";
 		$sql = "SELECT mod_anagrafica.email  AS email
 				FROM mod_anagrafica
 				INNER JOIN mod_contratti_collaboratori 
 					ON mod_contratti_collaboratori.fk_anagrafica = mod_anagrafica.id
-				WHERE mod_contratti_collaboratori.id = " . $id;
+				WHERE mod_contratti_collaboratori.id = ".$id;
 		//echo $sql	;	
-		$row =  $this->db->query($sql)->result_array();
+		$row =  $this->db->query($sql)->result_array();	
 		//print'<pre>';print_r($row);
-		if (isset($row[0])) {
+		if(isset($row[0])){
 			$email = $row[0]['email'];
 		}
-
+		
 		return $email;
 	}
 
 
-	public function getDettagliContratto($id)
-	{
+	public function getDettagliContratto($id){
 		$sql = "SELECT mod_anagrafica.*,
 					mod_contratti_collaboratori.id,
 					mod_contratti_collaboratori.fk_anagrafica,
@@ -237,9 +246,11 @@ class Mod_contratti_collaboratori_model extends BaseModel
 					ON mod_anagrafica.fk_comune_residenza = mod_comuni_residenza.istat	
 				INNER JOIN mod_tipopagamento  
 					ON mod_tipopagamento.id = mod_contratti_collaboratori.fk_tipopagamento		
-				WHERE mod_contratti_collaboratori.id = " . $id;
-		$row =  $this->db->query($sql)->result_array();
+				WHERE mod_contratti_collaboratori.id = ".$id;
+		$row =  $this->db->query($sql)->result_array();	
 
 		return $row[0];
+
 	}
+
 }
