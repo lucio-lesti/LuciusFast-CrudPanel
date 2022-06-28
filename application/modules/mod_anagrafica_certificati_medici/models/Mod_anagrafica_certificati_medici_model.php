@@ -21,6 +21,7 @@ class Mod_anagrafica_certificati_medici_model extends BaseModel
 
 		//NOTE 2: NELLA FUNZIONE 'setFieldArrayGrid' se nella chiave "nome" si usa una array, la classe "BaseModel" lo interpreta come un concat
 
+		//$this->setFieldArrayGrid('fk_anagrafica',FIELD_NUMERIC,'mod_anagrafica',array("id" => 'id', "nome" => 'nome'));
 		$this->setFieldArrayGrid('fk_anagrafica',FIELD_NUMERIC,'mod_anagrafica',array("id" => 'id', "nome" => array("nome"," ","cognome"," ' - ' ","codfiscale") ),'mod_anagrafica_nome');
 		$this->setFieldArrayGrid('tipologia', FIELD_STRING);
 		$this->setFieldArrayGrid('data_certificato', FIELD_DATE);
