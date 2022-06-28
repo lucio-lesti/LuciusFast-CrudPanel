@@ -21,6 +21,9 @@ class Mod_tesseramenti extends BaseController
 		$this->viewName_FormROAjax = 'mod_tesseramenti_read_ajax';
 		$this->viewName_FormAjax = 'mod_tesseramenti_form_ajax';
 
+		/*
+		//ABILITARE PER CUSTOMIZZAZIONE PER MODULO ERRORI SQL 
+		//IN CORSO MIGLIORIA PER GESTIRE I MESSAGGI TRAMITE TABELLA DI TRASCODIFICA
 		$this->MsgDBConverted['insert']['error']['1062'] = "Esiste gia questo elemento per il modulo Tesseramenti";
 		$this->MsgDBConverted['insert']['error']['1452'] = "Esiste gia questo elemento per il modulo Tesseramenti";
 		$this->MsgDBConverted['update']['error']['1062'] = "Esiste gia questo elemento per il modulo Tesseramenti";
@@ -31,9 +34,10 @@ class Mod_tesseramenti extends BaseController
 		$this->MsgDBConverted['update_massive']['error']['1452'] = "Esiste gia questo elemento per il modulo Tesseramenti";
 		$this->MsgDBConverted['delete']['error']['1217'] = "Impossibile eliminare questo elemento del modulo Tesseramenti. E' usato nei seguenti moduli:";
 		$this->MsgDBConverted['delete_massive']['error']['1217'] = "Impossibile eliminare alcuni elementi del modulo Tesseramenti. Sono usati nei seguenti moduli:";
+		*/
 
-		//NOTE:NELLA FUNZIONE 'setFormFields' INDICARE NEL VETTORE CHE SI COLLEGA ALLA TABELLA REFERENZIATA
-		//ALLA CHIAVE 'NOME', IL NOMINATIVO DEL CAMPO COLLEGATO
+
+		/** SETTAGGIO CAMPI FORM **/
 		$this->setFormFields('data_tesseramento');
 		$this->setFormFields('fk_affiliazione','mod_affiliazioni',array("id" => 'id', "nome" => 'nome'));
 		$this->setFormFields('fk_anagrafica','mod_anagrafica',array("id" => 'id', "nome" => 'CONCAT(nome," ",cognome," - ",codfiscale)'));
@@ -41,11 +45,11 @@ class Mod_tesseramenti extends BaseController
 		$this->setFormFields('fk_tessera_associativa','_mod_magazzino_tessere_lista_tessere',array("id" => 'id', "nome" => 'codice_tessera'));
 		$this->setFormFields('tessera_interna');
 		$this->setFormFields('importo');
-		//$this->setFormFields('modo_pagamento');
 		$this->setFormFields('fk_tipopagamento');
-		//$this->setFormFields('fk_tipopagamento','mod_tipopagamento',array("id" => 'id', "nome" => 'nome'));
 		$this->setFormFields('id');
 
+
+		/**  AGGIUNGO FILTRO COMBO  NELLA GRIGLIA - QUESTO METODO VA RISCRITTO NEL BASEMODEL **/
 		$this->addComboGridFilter(
 			'mod_esercizi_nome',
 			'mod_esercizi',
@@ -55,20 +59,10 @@ class Mod_tesseramenti extends BaseController
 			array("filter_slave_id" => "mod_affiliazioni_nome", "filter_slave_population_function" => "populateAffiliazioni")
 		);
 		$this->addComboGridFilter('mod_affiliazioni_nome', NULL, NULL, NULL, "Filtra per Affiliazione");
- 
 
-		/*
-		$this->custom_operations_list['insert_tessera_interna'] = function(){			
-			//if($_REQUEST['id'] == ""){
-				$ret = $this->modelClassModule->checkExistTesseraInterna($_REQUEST['tessera_interna'],$_REQUEST['fk_esercizio']);
-				if(!$ret){
-					$this->modelClassModule->insertTesseraInterna($_REQUEST['fk_tessera_interna'],
-						$_REQUEST['fk_anagrafica'],$_REQUEST['fk_esercizio'],$_REQUEST['tessera_interna']);
-				}
-			//}
-		};
-		*/
 		
+
+		/**  AREA LAMBDA FUNCTIONS - FUNZIONI RICHIAMATE in updateAjax, createAjax e nelle op. di CRUD master details**/
 		$this->custom_form_data_functions['fk_affiliazione_txt'] = function () {
 			$ret = "";	
 			if((isset($_REQUEST['fk_affiliazione'])))  {
@@ -98,7 +92,6 @@ class Mod_tesseramenti extends BaseController
 
 		$this->custom_form_data_functions['fk_tipopagamento_refval'] = function () {
 			$row =  $this->modelClassModule->get_all('mod_tipopagamento');
-			//print'<pre>';print_r($row);
 			return $row;
 		};		
  
@@ -167,25 +160,44 @@ class Mod_tesseramenti extends BaseController
 
 
 
+	/**
+	 * 
+	 * Prelevo esercizio corrente
+	 */
 	private function getEsercizioCorrente(){
 		return $this->modelClassModule->getEsercizioCorrente();
 	}
 
 
-
+	/**
+	 * 
+	 * Prelevo le affiliazioni in base al filtro passato
+	 */
 	public function populateAffiliazioni()
 	{
 		echo json_encode($this->modelClassModule->populateAffiliazioni($_REQUEST['filter_master_value']));
 	}
 
 
+	/**
+	 * 
+	* Prelevo la tessera in base all'anagrafica
+	* @param mixed $fkAnagrafica
+	* @param string $fkEsercizio
+	* @param string $fk_affiliazione
+	* @return string
+	**/
 	public function getTessera($fkAnagrafica, $fkEsercizio, $fk_affiliazione){
 		return $this->modelClassModule->getTessera($fkAnagrafica, $fkEsercizio, $fk_affiliazione);
 	}
 
 
 	/**
+	 * 
 	 * Verifica se la data di tesseramento rientra nell'esericizio
+	 * @param string $idEsercizio
+	 * @param date $data_tesseramento
+	 * @return bool
 	 */
 	public function check_data_tesseramento($idEsercizio, $data_tesseramento)
 	{
@@ -196,7 +208,10 @@ class Mod_tesseramenti extends BaseController
 
 
 	/**
+	 * 
 	 * Aggiorno l'importo del tesseramento
+	 * @param string $idtesseramento
+	 * @param float $importo
 	 */
 	public function update_importo_tesseramento($idtesseramento,$importo)
 	{
@@ -206,11 +221,15 @@ class Mod_tesseramenti extends BaseController
 	}
 	
 
-
+	/**
+	 * 
+	 * Inserimento massivo tesserati
+	 */
 	public function insertPagamentiFromTesserati(){
 		return $this->modelClassModule->insertPagamentiFromTesserati();
 	}
 	
+
 
 	public function _rules()
 	{
@@ -221,7 +240,6 @@ class Mod_tesseramenti extends BaseController
 		$this->form_validation->set_rules('fk_tessera_associativa', 'tessera', 'trim|numeric|max_length[10]|required');
 		$this->form_validation->set_rules('tessera_interna', 'tessera interna', 'trim|numeric|max_length[10]|required');
 		$this->form_validation->set_rules('importo', 'importo', 'trim|numeric|max_length[9]|required');
-		//$this->form_validation->set_rules('modo_pagamento', 'modalita pagamento', 'trim|required');
 		$this->form_validation->set_rules('fk_tipopagamento', 'modalita pagamento', 'trim|required');
 
 		$this->form_validation->set_rules('id', 'id', 'trim');
