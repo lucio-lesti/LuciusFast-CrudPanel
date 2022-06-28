@@ -22,6 +22,10 @@ class Mod_anagrafica_pagamenti_v extends BaseController
 		$this->viewName_FormROAjax = 'mod_anagrafica_pagamenti_v_read_ajax';
 		$this->viewName_FormAjax = 'mod_anagrafica_pagamenti_v_form_ajax';
 
+		/*
+		//ABILITARE PER CUSTOMIZZAZIONE PER MODULO ERRORI SQL 
+		//IN CORSO MIGLIORIA PER GESTIRE I MESSAGGI TRAMITE TABELLA DI TRASCODIFICA
+		//SPOSTARE LOGICA NEL MODEL				
 		$this->MsgDBConverted['insert']['error']['1062'] = "Esiste gia questo elemento per il modulo Pagamenti Ricevuti";
 		$this->MsgDBConverted['insert']['error']['1452'] = "Esiste gia questo elemento per il modulo Pagamenti Ricevuti";
 		$this->MsgDBConverted['update']['error']['1062'] = "Esiste gia questo elemento per il modulo Pagamenti Ricevuti";
@@ -32,7 +36,9 @@ class Mod_anagrafica_pagamenti_v extends BaseController
 		$this->MsgDBConverted['update_massive']['error']['1452'] = "Esiste gia questo elemento per il modulo Pagamenti Ricevuti";
 		$this->MsgDBConverted['delete']['error']['1217'] = "Impossibile eliminare questo elemento del modulo Pagamenti Ricevuti. E' usato nei seguenti moduli:";
 		$this->MsgDBConverted['delete_massive']['error']['1217'] = "Impossibile eliminare alcuni elementi del modulo Pagamenti Ricevuti. Sono usati nei seguenti moduli:";
+		*/
 
+		
 		//NOTE:NELLA FUNZIONE 'setFormFields' INDICARE NEL VETTORE CHE SI COLLEGA ALLA TABELLA REFERENZIATA
 		//ALLA CHIAVE 'NOME', IL NOMINATIVO DEL CAMPO COLLEGATO
 		$this->setFormFields('id');
