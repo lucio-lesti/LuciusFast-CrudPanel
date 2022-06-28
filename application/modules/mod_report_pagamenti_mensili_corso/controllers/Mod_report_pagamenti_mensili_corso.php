@@ -20,6 +20,7 @@ class Mod_report_pagamenti_mensili_corso extends BaseController
 		$this->viewName_ListAjax = 'mod_report_pagamenti_mensili_corso_list_ajax';
 
 
+		/**  AGGIUNGO FILTRO COMBO  NELLA GRIGLIA - QUESTO METODO VA RISCRITTO NEL BASEMODEL **/		
 		$this->addComboGridFilter(
 			'mod_esercizi_id',
 			'mod_esercizi',
