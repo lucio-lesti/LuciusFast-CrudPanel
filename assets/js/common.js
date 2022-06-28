@@ -12,150 +12,6 @@ var skinColorSet = "skin-blue";
 $.fn.datepicker.defaults.language = 'it';
 
 
-//
-//
-//COMBOBOX AUTOCOMPLETANTE jQueryUI
-//
-jQuery(document).ready(function () {
-  $(function () {
-    $.widget("custom.combobox", {
-      _create: function () {
-        this.wrapper = $("<span>")
-          .addClass("custom-combobox")
-          .insertAfter(this.element);
-
-        this.element.hide();
-        this._createAutocomplete();
-        this._createShowAllButton();
-      },
-
-      _createAutocomplete: function () {
-        var selected = this.element.children(":selected"),
-          value = selected.val() ? selected.text() : "";
-
-        this.input = $("<input>")
-          .appendTo(this.wrapper)
-          .val(value)
-          .attr("title", "")
-          .addClass("custom-combobox-input ui-widget ui-widget-content ui-state-default ui-corner-left")
-          .autocomplete({
-            delay: 0,
-            minLength: 0,
-            source: $.proxy(this, "_source")
-          })
-          .tooltip({
-            classes: {
-              "ui-tooltip": "ui-state-highlight"
-            }
-          });
-
-        this._on(this.input, {
-          autocompleteselect: function (event, ui) {
-            ui.item.option.selected = true;
-            this._trigger("select", event, {
-              item: ui.item.option
-            });
-          },
-
-          autocompletechange: "_removeIfInvalid"
-        });
-      },
-
-      _createShowAllButton: function () {
-        var input = this.input,
-          wasOpen = false;
-
-        $("<a>")
-          .attr("tabIndex", -1)
-          .attr("title", "Show All Items")
-          .tooltip()
-          .appendTo(this.wrapper)
-          .button({
-            icons: {
-              primary: "ui-icon-triangle-1-s"
-            },
-            text: false
-          })
-          .removeClass("ui-corner-all")
-          .addClass("custom-combobox-toggle ui-corner-right")
-          .on("mousedown", function () {
-            wasOpen = input.autocomplete("widget").is(":visible");
-          })
-          .on("click", function () {
-            input.trigger("focus");
-
-            // Close if already visible
-            if (wasOpen) {
-              return;
-            }
-
-            // Pass empty string as value to search for, displaying all results
-            input.autocomplete("search", "");
-          });
-      },
-
-      _source: function (request, response) {
-        var matcher = new RegExp($.ui.autocomplete.escapeRegex(request.term), "i");
-        response(this.element.children("option").map(function () {
-          var text = $(this).text();
-          if (this.value && (!request.term || matcher.test(text)))
-            return {
-              label: text,
-              value: text,
-              option: this
-            };
-        }));
-      },
-
-      _removeIfInvalid: function (event, ui) {
-
-        // Selected an item, nothing to do
-        if (ui.item) {
-          return;
-        }
-
-        // Search for a match (case-insensitive)
-        var value = this.input.val(),
-          valueLowerCase = value.toLowerCase(),
-          valid = false;
-        this.element.children("option").each(function () {
-          if ($(this).text().toLowerCase() === valueLowerCase) {
-            this.selected = valid = true;
-            return false;
-          }
-        });
-
-        // Found a match, nothing to do
-        if (valid) {
-          return;
-        }
-
-        // Remove invalid value
-        this.input
-          .val("")
-          .attr("title", value + " didn't match any item")
-          .tooltip("open");
-        this.element.val("");
-        this._delay(function () {
-          this.input.tooltip("close").attr("title", "");
-        }, 2500);
-        this.input.autocomplete("instance").term = "";
-      },
-
-      _destroy: function () {
-        this.wrapper.remove();
-        this.element.show();
-      }
-    });
-
-    $(".combobox").combobox();
-    $("toggle").on("click", function () {
-      $(".combobox").toggle();
-    });
-  });
-
-});
-
 
 
 //
@@ -185,6 +41,22 @@ function redirectSuccessfullAjaxCall(urlRedirect, id_main_content) {
 }
 
 
+
+
+/**
+ * Apre una finestra pop-up bootstrap di una master details e carica il contenuto via ajax
+ * 
+ * @param {*} module 
+ * @param {*} winFormMasterDetailsFunc 
+ * @param {*} action 
+ * @param {*} entryID 
+ * @param {*} entryIDMasterDetails 
+ * @param {*} titleWinForm 
+ * @param {*} arrayValidationFields 
+ * @param {*} winformName 
+ * @param {*} winFormType 
+ * @param {*} gridMasterDetails 
+ */
 function winFormMasterDetails(module, winFormMasterDetailsFunc, action, entryID, entryIDMasterDetails = 'NULL', titleWinForm, arrayValidationFields, winformName = "", winFormType = 'form', gridMasterDetails = "") {
   showBiscuit();
   $("#win_add_edit_master_details").modal();
@@ -218,6 +90,14 @@ function winFormMasterDetails(module, winFormMasterDetailsFunc, action, entryID,
 }
 
 
+
+/**
+ * 
+ * Eseguo l'action del form di una pop-up per una master details
+ * @param {*} module 
+ * @param {*} action 
+ * @param {*} gridMasterDetails 
+ */
 function winFormMasterDetailsCall(module, action, gridMasterDetails) {
   showBiscuit();
   var form = $('#frm_master_detail')[0];
@@ -259,6 +139,19 @@ function winFormMasterDetailsCall(module, action, gridMasterDetails) {
 
 
 
+/**
+ * 
+ * Apre una finestra pop-up bootstrap di una master details e carica il contenuto via ajax
+ * progressivamente deve essere sostituita con la "winFormMasterDetails"
+ * 
+ * @deprecated
+ * @param {*} module 
+ * @param {*} form_name 
+ * @param {*} combo_name 
+ * @param {*} combo_id_value 
+ * @param {*} combo_name_value 
+ * @param {*} titleWinForm 
+ */
 function winFormCombo(module, form_name, combo_name, combo_id_value, combo_name_value, titleWinForm) {
   showBiscuit();
   $("#win_add_edit_master_details").modal();
@@ -321,7 +214,16 @@ function winFormCombo(module, form_name, combo_name, combo_id_value, combo_name_
 
 
 
-
+/**
+ * 
+ * Pop up di cancellazione in una master details
+ * @param {*} entryIDMasterDetails 
+ * @param {*} entryID 
+ * @param {*} module 
+ * @param {*} table 
+ * @param {*} gridMasterDetails 
+ * @returns 
+ */
 function deleteMasterDetails(entryIDMasterDetails, entryID, module, table, gridMasterDetails = "") {
   $('#bt_delete_ajax_entry').unbind('click');
 
@@ -358,6 +260,18 @@ function deleteMasterDetails(entryIDMasterDetails, entryID, module, table, gridM
 }
 
 
+
+/**
+ * 
+ * Pop up di cancellazione massiva in una master details
+ * @param {*} id 
+ * @param {*} idEntryList 
+ * @param {*} idCheckBox 
+ * @param {*} module 
+ * @param {*} table 
+ * @param {*} gridMasterDetails 
+ * @returns 
+ */
 function deleteMassiveMasterDetails(id, idEntryList, idCheckBox, module, table, gridMasterDetails = "") {
   $('#bt_delete_ajax_entry').unbind('click');
 
@@ -413,7 +327,17 @@ function deleteMassiveMasterDetails(id, idEntryList, idCheckBox, module, table, 
 }
 
 
-function deleteMasterDetailsCall(entryIDMasterDetails, entryID, module, table,gridMasterDetails) {
+
+/**
+ * 
+ * Chiamata Ajax. Cancella un'elemento di una griglia in una master details 
+ * @param {*} entryIDMasterDetails 
+ * @param {*} entryID 
+ * @param {*} module 
+ * @param {*} table 
+ * @param {*} gridMasterDetails 
+ */
+function deleteMasterDetailsCall(entryIDMasterDetails, entryID, module, table, gridMasterDetails) {
   console.log(entryID);
   showBiscuit();
   $.ajax({
@@ -436,7 +360,7 @@ function deleteMasterDetailsCall(entryIDMasterDetails, entryID, module, table,gr
 
       if (typeof gridMasterDetails !== "undefined") {
         $('#lnk-' + gridMasterDetails).tab('show');
-      }      
+      }
       window.location.href = '#divAjaxMsg_container';
       hideBiscuit();
     },
@@ -448,7 +372,17 @@ function deleteMasterDetailsCall(entryIDMasterDetails, entryID, module, table,gr
 }
 
 
-function deleteMassiveMasterDetailsCall(id, entry_list, module, table,gridMasterDetails) {
+
+/**
+ * 
+ * Chiamata Ajax. Cancella piu elementi di una griglia in una master details 
+ * @param {*} id 
+ * @param {*} entry_list 
+ * @param {*} module 
+ * @param {*} table 
+ * @param {*} gridMasterDetails 
+ */
+function deleteMassiveMasterDetailsCall(id, entry_list, module, table, gridMasterDetails) {
   showBiscuit();
   $.ajax({
     url: baseURL + module + '/delete_massive_master_details/' + id + "/" + entry_list + '/' + table,
@@ -470,7 +404,7 @@ function deleteMassiveMasterDetailsCall(id, entry_list, module, table,gridMaster
 
       if (typeof gridMasterDetails !== "undefined") {
         $('#lnk-' + gridMasterDetails).tab('show');
-      }      
+      }
       window.location.href = '#divAjaxMsg_container';
       hideBiscuit();
     },
@@ -482,6 +416,41 @@ function deleteMassiveMasterDetailsCall(id, entry_list, module, table,gridMaster
 }
 
 
+
+
+/**
+ * 
+ * Pop up di cancellazione in una griglia
+ * @param {*} entryID 
+ * @param {*} module 
+ * @param {*} action 
+ * @returns 
+ */
+ function deleteEntry(entryID, module, action) {
+  if ((typeof entryID === 'undefined') || (entryID == "")) {
+    return false;
+  }
+
+  if ((typeof action === 'undefined') || (action == "")) {
+    action = 'delete';
+  }
+
+  document.getElementById('dlg_msg_delete').innerHTML = "Eliminare il record selezionato?";
+
+  document.getElementById('frm_delete_entry').action = baseURL + '/' + module + '/' + action + '/' + entryID;
+  $("#modal-delete").modal();
+}
+
+
+
+/**
+ * Pop up di cancellazione massiva in una griglia
+ * @param {*} idEntryList 
+ * @param {*} idCheckBox 
+ * @param {*} module 
+ * @param {*} action 
+ * @returns 
+ */
 function deleteMassiveEntry(idEntryList, idCheckBox, module, action) {
   var checkboxes = document.getElementsByName(idCheckBox);
   var entry_list = "";
@@ -520,93 +489,14 @@ function deleteMassiveEntry(idEntryList, idCheckBox, module, action) {
 }
 
 
-function deleteEntry(entryID, module, action) {
-  if ((typeof entryID === 'undefined') || (entryID == "")) {
-    return false;
-  }
-
-  if ((typeof action === 'undefined') || (action == "")) {
-    action = 'delete';
-  }
-
-  document.getElementById('dlg_msg_delete').innerHTML = "Eliminare il record selezionato?";
-
-  document.getElementById('frm_delete_entry').action = baseURL + '/' + module + '/' + action + '/' + entryID;
-  $("#modal-delete").modal();
-}
 
 
 
-function deleteAjaxEntry(entryID, module, action, objParamRefreshLayout) {
-  $('#bt_delete_ajax_entry').unbind('click');
-
-  $("#bt_delete_ajax_entry").prop("disabled", false);
-  $("#bt_delete_ajax_entry_cancel").prop("disabled", false);
-
-  if ((typeof entryID === 'undefined') || (entryID == "")) {
-    return false;
-  }
-
-  if ((typeof action === 'undefined') || (action == "")) {
-    action = 'delete';
-  }
-
-  $("#bt_delete_ajax_entry").on("click", function () {
-    $("#bt_delete_ajax_entry").prop("disabled", true);
-    $("#bt_delete_ajax_entry_cancel").prop("disabled", true);
-    $('#modal-ajax-delete').modal('hide');
-    deleteAjaxCall(entryID, module, action, objParamRefreshLayout);
-  });
-
-  $("#modal-ajax-delete").modal();
-
-}
-
-
-function deleteAjaxCall(entryID, module, action, objParamRefreshLayout) {
-  console.log(entryID);
-  showBiscuit();
-  $.ajax({
-    url: baseURL + '/' + module + '/' + action + '/' + entryID,
-    type: 'GET',
-    dataType: 'json',
-    success: function (data) {
-      //AGGIORNO IL LAYOUT
-      //IN QUESTA VERSIONE IL RESPONSE PER GLIA AGGIORNAMENTI DEI LAYOUT E' SEMPRE HTML
-      if (objParamRefreshLayout.responseType == "HTML") {
-        refreshLayoutFromHTMLResponse(objParamRefreshLayout);
-      }
-    },
-    error: function (request, error) {
-      hideBiscuit();
-      alert("Request: " + JSON.stringify(request));
-    }
-  });
-}
-
-
-function ajaxCallFormData(formData, module, action, objParamRefreshLayout) {
-  console.log(entryID);
-  showBiscuit();
-  $.ajax({
-    url: baseURL + '/' + module + '/' + action + '/' + entryID,
-    type: 'GET',
-    dataType: 'json',
-    success: function (data) {
-      //AGGIORNO IL LAYOUT
-      //IN QUESTA VERSIONE IL RESPONSE PER GLIA AGGIORNAMENTI DEI LAYOUT E' SEMPRE HTML
-      if (objParamRefreshLayout.responseType == "HTML") {
-        refreshLayoutFromHTMLResponse(objParamRefreshLayout);
-      }
-    },
-    error: function (request, error) {
-      hideBiscuit();
-      alert("Request: " + JSON.stringify(request));
-    }
-  });
-}
-
-
+/**
+ * 
+ * Aggiorna un'elemento dopo una chiamata ajax
+ * @param {*} objParamRefreshLayout 
+ */
 function refreshLayoutFromHTMLResponse(objParamRefreshLayout) {
   $.ajax({
     //I PARAMETRI DI CHIAMATA SONO TUTTI CONTENUTI NELLA VAR STRINGA ajaxCallForRefresh
@@ -627,6 +517,16 @@ function refreshLayoutFromHTMLResponse(objParamRefreshLayout) {
 }
 
 
+
+/**
+ * 
+ * Submit di un form. Da sostituire con una chiamata ajax
+ * @deprecated
+ * @param {*} formName 
+ * @param {*} buttonOkId 
+ * @param {*} buttonResetId 
+ * @returns 
+ */
 function submitFormModule(formName, buttonOkId, buttonResetId) {
   if ((typeof buttonOkId === 'undefined') || (buttonOkId == "")) {
     return false;
@@ -647,6 +547,12 @@ function submitFormModule(formName, buttonOkId, buttonResetId) {
 //FUNZIONI PER IL CRUD(CREATE,READ,EDIT)
 //
 
+
+/**
+ * Apre in modalita di modifica un tab form
+ * @param {*} mod_name 
+ * @param {*} recordID 
+ */
 function editAjax(mod_name, recordID) {
   $('.btn.btn-sm.btn-info').addClass('disabled');
   $('.btn.btn-primary').addClass('disabled');
@@ -697,6 +603,10 @@ function editAjax(mod_name, recordID) {
 }
 
 
+/**
+ * Apre in modalita di inserimento un tab form
+ * @param {*} mod_name 
+ */
 function createAjax(mod_name) {
   $('.btn.btn-sm.btn-info').addClass('disabled');
   $('.btn.btn-primary').addClass('disabled');
@@ -724,11 +634,6 @@ function createAjax(mod_name) {
 
       //DISABILITO TEMPORANEAMENTE  LA POSSIBILITA DI PIU FORM APERTI
       document.getElementById('href_elenco').removeAttribute('data-toggle');
-      /*
-      $('.btn.btn-sm.btn-info').removeClass('disabled');
-      $('.btn.btn-sm.btn-danger.deleteUser').removeClass('disabled');
-      $('.btn.btn-primary').removeClass('disabled');
-      */
 
       anchor = document.createElement('a');
       anchor.setAttribute('href', '#top_form');
@@ -741,6 +646,12 @@ function createAjax(mod_name) {
 }
 
 
+
+/**
+ * Apre in modalita di sola lettura un tab form
+ * @param {*} mod_name 
+ * @param {*} recordID 
+ */
 function readAjax(mod_name, recordID) {
   $('.btn.btn-sm.btn-info').addClass('disabled');
   $('.btn.btn-primary').addClass('disabled');
@@ -792,11 +703,13 @@ function readAjax(mod_name, recordID) {
 //FUNZIONI DI GESTIONE CAMPI SUL FORM
 //
 //
-function hideMessage(id) {
-  document.getElementById(id).style.display = "none";
-}
 
 
+
+/**
+ * Al click nasconde un messaggio mostrato dal sistema all'utente
+ * @param {*} id 
+ */
 function hideMsg(id) {
   if (typeof id === 'undefined') {
     id = "divAjaxMsg";
@@ -806,11 +719,25 @@ function hideMsg(id) {
 
 
 
+/**
+ * 
+ * Pulisce un campo datepicker
+ * @param {*} id 
+ */
 function pulisciCampoData(id) {
   $('#' + id).val('').datepicker('update');
 }
 
 
+
+/**
+ * 
+ * Pop up di rimozione allegato
+ * @param {*} moduleName 
+ * @param {*} entryId 
+ * @param {*} fileName 
+ * @param {*} NrAllegato 
+ */
 function rimuoviAllegato(moduleName, entryId, fileName, NrAllegato) {
   moduleNameAllegato = moduleName;
   entryIDAllegato = entryId;
@@ -820,6 +747,11 @@ function rimuoviAllegato(moduleName, entryId, fileName, NrAllegato) {
 }
 
 
+
+/**
+ * 
+ * Rimuove via ajax un'allegato
+ */
 function rimuoviAllegatoExec() {
   $("#modal-delete-allegato").modal('hide');
   showBiscuit();
@@ -849,6 +781,14 @@ function rimuoviAllegatoExec() {
 }
 
 
+
+/**
+ * 
+ * Seleziona/Deselziona tutti checkbox
+ * @param {*} idCheckMaster 
+ * @param {*} idCheckBox 
+ * @param {*} idBtDeleteMass 
+ */
 function selezionaDeselezionaTutti(idCheckMaster, idCheckBox, idBtDeleteMass) {
   var checkboxes = document.getElementsByName(idCheckBox);
   var checkMaster = document.getElementById(idCheckMaster);
@@ -881,6 +821,11 @@ function selezionaDeselezionaTutti(idCheckMaster, idCheckBox, idBtDeleteMass) {
 }
 
 
+/**
+ * 
+ * @param {*} idCheckBox 
+ * @param {*} idBtDeleteMass 
+ */
 function verificaNrCheckBoxSelezionati(idCheckBox, idBtDeleteMass) {
   var nrCheckBoxSelezionati = 0;
   var checkboxes = document.getElementsByName(idCheckBox);
@@ -899,6 +844,12 @@ function verificaNrCheckBoxSelezionati(idCheckBox, idBtDeleteMass) {
 }
 
 
+
+/**
+ * Aggiunge un elemento in un listbox
+ * @param {*} sourceId 
+ * @param {*} listboxId 
+ */
 function addItemListBox(sourceId, listboxId) {
   var listBox = document.getElementById(listboxId);
   var option = document.createElement("option");
@@ -914,6 +865,10 @@ function addItemListBox(sourceId, listboxId) {
 }
 
 
+/**
+ * Rimuove un elemento in un listbox
+ * @param {*} listboxId 
+ */
 function removeItemListBox(listboxId) {
   var listBox = document.getElementById(listboxId);
   var itemId = document.getElementById(listboxId).selectedIndex;
@@ -921,12 +876,18 @@ function removeItemListBox(listboxId) {
 }
 
 
+
+/**
+ * Seleziona tutti gli elementi in un listbox
+ * @param {*} listboxId 
+ */
 function selectAllItemListBox(listboxId) {
   var select = document.getElementById(listboxId);
   for (i = 0; i < select.options.length; i++) {
     select.options[i].selected = true;
   }
 }
+
 
 
 //
@@ -982,6 +943,11 @@ function renderizzaCalendario() {
 }
 
 
+
+/**
+ * Ricarica gli item in un calendario
+ * @param {*} calendar 
+ */
 function reloadCalendar(calendar) {
   calendar.removeAllEvents();
   filterArray[0] = {
@@ -998,6 +964,14 @@ function reloadCalendar(calendar) {
 //LOADER
 //
 //
+
+
+/**
+ * 
+ * Loader di sistema
+ * @param {*} loaderName 
+ * @param {*} callback 
+ */
 function showBiscuit(loaderName, callback) {
   //SE NON E' SETTATO NESSUN ID, GLI SETTO UN ID DI DEFAULT
   if (typeof (loaderName) === 'undefined') {
@@ -1016,6 +990,12 @@ function showBiscuit(loaderName, callback) {
 
 
 
+/**
+ * 
+ * Nasconde il loader di sistema
+ * @param {*} loaderName 
+ * @param {*} callback 
+ */
 function hideBiscuit(loaderName, callback) {
   //SE NON E' SETTATO NESSUN ID, GLI SETTO UN ID DI DEFAULT
   if (typeof (loaderName) === 'undefined') {
@@ -1390,7 +1370,7 @@ function pulisciCampo(id, divName = null) {
 
 function pulisciSelect2(id) {
   $('#' + id).val(null).trigger('change');
-}  
+}
 
 
 function check_date_greater_then(date_from_name, date_to_name) {
@@ -1518,39 +1498,39 @@ function validateHhMm(value) {
 
 }
 
-function showElementiNonPresenti(type){
+function showElementiNonPresenti(type) {
   var title = "Elementi non presenti";
-  switch(type){
+  switch (type) {
 
     case 'tessere_assoc_non_presenti':
       title = "Tessere associative finite o non presenti per enti";
-    break; 
+      break;
 
     case 'cert_medici_non_presenti':
       title = "Certificati Medici non presenti";
-    break; 
-    
+      break;
+
     case 'auto_cert_gp_non_presenti':
       title = "Autocertificazioni Green Pass non presenti";
-    break;     
+      break;
   }
 
-  
+
   document.getElementById("title_generic_form").innerHTML = '<i class="fa fa-exclamation-triangle"></i>  <span id="title_generic_form_msg">' + title + '</span>';
   $("#modal-generic-form").modal();
 
 }
 
 
-	
+
 function convertDate(inputFormat) {
   function pad(s) { return (s < 10) ? '0' + s : s; }
-    var d = new Date(inputFormat)
-    var dateStr = [pad(d.getDate()), pad(d.getMonth()+1), d.getFullYear()].join('/');
-    return dateStr + " " + d.getHours() + ":" + padLeft(d.getMinutes(),2);
+  var d = new Date(inputFormat)
+  var dateStr = [pad(d.getDate()), pad(d.getMonth() + 1), d.getFullYear()].join('/');
+  return dateStr + " " + d.getHours() + ":" + padLeft(d.getMinutes(), 2);
 }
 
- 
+
 
 function padLeft(number, len) {
   var zeroes = "0".repeat(len);
@@ -1558,16 +1538,16 @@ function padLeft(number, len) {
 }
 
 
-function sendMailWithAttach(module, email, id, subject){
+function sendMailWithAttach(module, email, id, subject) {
   showBiscuit();
   $.ajax({
     url: baseURL + module + '/sendMailWithAttach/',
     type: 'POST',
-    data:{
-      module:module,
-      email:email,
-      id:id,
-      subject:subject
+    data: {
+      module: module,
+      email: email,
+      id: id,
+      subject: subject
     },
     dataType: 'html',
     success: function (data) {
@@ -1579,32 +1559,179 @@ function sendMailWithAttach(module, email, id, subject){
       hideBiscuit();
       alert("Request: " + JSON.stringify(request));
     }
-  });  
+  });
 }
 
 
-function showElementiNonPresenti(type){
+function showElementiNonPresenti(type) {
   showBiscuit();
 
   $.ajax({
-    url: baseURL  + 'mod_scadenze_notifiche/showElementiNonPresenti/' + type,
+    url: baseURL + 'mod_scadenze_notifiche/showElementiNonPresenti/' + type,
     type: 'GET',
     dataType: 'html',
     success: function (data) {
-      document.getElementById('title_elementi-non-presenti').innerHTML  = '<i class="fa fa-exclamation-triangle"></i>  <span id="title_generic_form_msg">Notifiche</span></h5>';
-      document.getElementById('modal_body_elementi-non-presenti').innerHTML  = data;
+      document.getElementById('title_elementi-non-presenti').innerHTML = '<i class="fa fa-exclamation-triangle"></i>  <span id="title_generic_form_msg">Notifiche</span></h5>';
+      document.getElementById('modal_body_elementi-non-presenti').innerHTML = data;
       $('#modal-elementi-non-presenti').modal();
       hideBiscuit();
     },
     error: function (request, error) {
- 
 
-      document.getElementById('title_elementi-non-presenti').innerHTML  = '<i class="fa fa-exclamation-triangle"></i>  <span id="title_generic_form_msg">ERRORE</span></h5>';
-      document.getElementById('modal_body_elementi-non-presenti').innerHTML  = JSON.stringify(request);
+
+      document.getElementById('title_elementi-non-presenti').innerHTML = '<i class="fa fa-exclamation-triangle"></i>  <span id="title_generic_form_msg">ERRORE</span></h5>';
+      document.getElementById('modal_body_elementi-non-presenti').innerHTML = JSON.stringify(request);
       $('#modal-elementi-non-presenti').modal();
-      hideBiscuit();      
+      hideBiscuit();
     }
-  });    
+  });
 
 
 }
+
+
+
+
+//
+//
+//COMBOBOX AUTOCOMPLETANTE jQueryUI
+//
+jQuery(document).ready(function () {
+  $(function () {
+    $.widget("custom.combobox", {
+      _create: function () {
+        this.wrapper = $("<span>")
+          .addClass("custom-combobox")
+          .insertAfter(this.element);
+
+        this.element.hide();
+        this._createAutocomplete();
+        this._createShowAllButton();
+      },
+
+      _createAutocomplete: function () {
+        var selected = this.element.children(":selected"),
+          value = selected.val() ? selected.text() : "";
+
+        this.input = $("<input>")
+          .appendTo(this.wrapper)
+          .val(value)
+          .attr("title", "")
+          .addClass("custom-combobox-input ui-widget ui-widget-content ui-state-default ui-corner-left")
+          .autocomplete({
+            delay: 0,
+            minLength: 0,
+            source: $.proxy(this, "_source")
+          })
+          .tooltip({
+            classes: {
+              "ui-tooltip": "ui-state-highlight"
+            }
+          });
+
+        this._on(this.input, {
+          autocompleteselect: function (event, ui) {
+            ui.item.option.selected = true;
+            this._trigger("select", event, {
+              item: ui.item.option
+            });
+          },
+
+          autocompletechange: "_removeIfInvalid"
+        });
+      },
+
+      _createShowAllButton: function () {
+        var input = this.input,
+          wasOpen = false;
+
+        $("<a>")
+          .attr("tabIndex", -1)
+          .attr("title", "Show All Items")
+          .tooltip()
+          .appendTo(this.wrapper)
+          .button({
+            icons: {
+              primary: "ui-icon-triangle-1-s"
+            },
+            text: false
+          })
+          .removeClass("ui-corner-all")
+          .addClass("custom-combobox-toggle ui-corner-right")
+          .on("mousedown", function () {
+            wasOpen = input.autocomplete("widget").is(":visible");
+          })
+          .on("click", function () {
+            input.trigger("focus");
+
+            // Close if already visible
+            if (wasOpen) {
+              return;
+            }
+
+            // Pass empty string as value to search for, displaying all results
+            input.autocomplete("search", "");
+          });
+      },
+
+      _source: function (request, response) {
+        var matcher = new RegExp($.ui.autocomplete.escapeRegex(request.term), "i");
+        response(this.element.children("option").map(function () {
+          var text = $(this).text();
+          if (this.value && (!request.term || matcher.test(text)))
+            return {
+              label: text,
+              value: text,
+              option: this
+            };
+        }));
+      },
+
+      _removeIfInvalid: function (event, ui) {
+
+        // Selected an item, nothing to do
+        if (ui.item) {
+          return;
+        }
+
+        // Search for a match (case-insensitive)
+        var value = this.input.val(),
+          valueLowerCase = value.toLowerCase(),
+          valid = false;
+        this.element.children("option").each(function () {
+          if ($(this).text().toLowerCase() === valueLowerCase) {
+            this.selected = valid = true;
+            return false;
+          }
+        });
+
+        // Found a match, nothing to do
+        if (valid) {
+          return;
+        }
+
+        // Remove invalid value
+        this.input
+          .val("")
+          .attr("title", value + " didn't match any item")
+          .tooltip("open");
+        this.element.val("");
+        this._delay(function () {
+          this.input.tooltip("close").attr("title", "");
+        }, 2500);
+        this.input.autocomplete("instance").term = "";
+      },
+
+      _destroy: function () {
+        this.wrapper.remove();
+        this.element.show();
+      }
+    });
+
+    $(".combobox").combobox();
+    $("toggle").on("click", function () {
+      $(".combobox").toggle();
+    });
+  });
+
+});
