@@ -20,6 +20,11 @@ class Mod_esercizi extends BaseController
 		$this->viewName_FormROAjax = 'mod_esercizi_read_ajax';
 		$this->viewName_FormAjax = 'mod_esercizi_form_ajax';
 
+
+		/*
+		//ABILITARE PER CUSTOMIZZAZIONE PER MODULO ERRORI SQL 
+		//IN CORSO MIGLIORIA PER GESTIRE I MESSAGGI TRAMITE TABELLA DI TRASCODIFICA
+		//SPOSTARE LOGICA NEL MODEL					
 		$this->MsgDBConverted['insert']['error']['1062'] = "Esiste gia questo elemento per il modulo Esercizi";
 		$this->MsgDBConverted['insert']['error']['1452'] = "Esiste gia questo elemento per il modulo Esercizi";
 		$this->MsgDBConverted['update']['error']['1062'] = "Esiste gia questo elemento per il modulo Esercizi";
@@ -30,6 +35,8 @@ class Mod_esercizi extends BaseController
 		$this->MsgDBConverted['update_massive']['error']['1452'] = "Esiste gia questo elemento per il modulo Esercizi";
 		$this->MsgDBConverted['delete']['error']['1217'] = "Impossibile eliminare questo elemento del modulo Esercizi. E' usato nei seguenti moduli:";
 		$this->MsgDBConverted['delete_massive']['error']['1217'] = "Impossibile eliminare alcuni elementi del modulo Esercizi. Sono usati nei seguenti moduli:";
+		*/
+
 
 		//NOTE:NELLA FUNZIONE 'setFormFields' INDICARE NEL VETTORE CHE SI COLLEGA ALLA TABELLA REFERENZIATA
 		//ALLA CHIAVE 'NOME', IL NOMINATIVO DEL CAMPO COLLEGATO
@@ -38,6 +45,7 @@ class Mod_esercizi extends BaseController
 		$this->setFormFields('nome');
 		$this->setFormFields('id');
 
+		//RUCHIAMO FUNZIONE PER IL CARICAMENTO MASTER DETAILS
 		$this->addMasterDetailsLoadFunc('getMasterDetail_mod_anagrafica_tessere_interne','Anagrafati Tessere Interne','getMasterDetail_mod_anagrafica_tessere_interne');
 
 	}
