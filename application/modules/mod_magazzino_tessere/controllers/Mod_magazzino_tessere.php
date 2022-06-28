@@ -23,6 +23,11 @@ class Mod_magazzino_tessere extends BaseController
 		$this->viewName_FormROAjax = 'mod_magazzino_tessere_read_ajax';
 		$this->viewName_FormAjax = 'mod_magazzino_tessere_form_ajax';
 
+
+		/*
+		//ABILITARE PER CUSTOMIZZAZIONE PER MODULO ERRORI SQL 
+		//IN CORSO MIGLIORIA PER GESTIRE I MESSAGGI TRAMITE TABELLA DI TRASCODIFICA
+		//SPOSTARE LOGICA NEL MODEL			
 		$this->MsgDBConverted['insert']['error']['1062'] = "Esiste gia questo elemento per il modulo Magazzino Tessere";
 		$this->MsgDBConverted['insert']['error']['1452'] = "Esiste gia questo elemento per il modulo Magazzino Tessere";
 		$this->MsgDBConverted['update']['error']['1062'] = "Esiste gia questo elemento per il modulo Magazzino Tessere";
@@ -33,6 +38,8 @@ class Mod_magazzino_tessere extends BaseController
 		$this->MsgDBConverted['update_massive']['error']['1452'] = "Esiste gia questo elemento per il modulo Magazzino Tessere";
 		$this->MsgDBConverted['delete']['error']['1217'] = "Impossibile eliminare questo elemento del modulo Magazzino Tessere. E' usato nei seguenti moduli:";
 		$this->MsgDBConverted['delete_massive']['error']['1217'] = "Impossibile eliminare alcuni elementi del modulo Magazzino Tessere. Sono usati nei seguenti moduli:";
+		*/
+
 
 		//NOTE:NELLA FUNZIONE 'setFormFields' INDICARE NEL VETTORE CHE SI COLLEGA ALLA TABELLA REFERENZIATA
 		//ALLA CHIAVE 'NOME', IL NOMINATIVO DEL CAMPO COLLEGATO
@@ -44,10 +51,11 @@ class Mod_magazzino_tessere extends BaseController
 		$this->setFormFields('id');
 
 
+		//RICHIAMO FUNZIONE PER IL CARICAMENTO MASTER DETAILS
 		$this->addMasterDetailsLoadFunc('getMasterDetail_mod_magazzino_tessere_lista_tessere','Lista Tessere','getMasterDetail_mod_magazzino_tessere_lista_tessere');
 
-		
 
+		/**  AREA LAMBDA FUNCTIONS - FUNZIONI RICHIAMATE in updateAjax, createAjax e nelle op. di CRUD master details**/
 		$this->custom_form_data_functions['fk_ente'] = function () {
 			$ret = "";	
 			if((isset($_REQUEST['recordID'])))  {
@@ -76,6 +84,7 @@ class Mod_magazzino_tessere extends BaseController
 		};
 	}
 
+	
 
 	/**
 	* Funzione caricamento della master details, tabella _mod_magazzino_tessere_lista_tessere
