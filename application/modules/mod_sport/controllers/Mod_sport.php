@@ -21,6 +21,10 @@ class Mod_sport extends BaseController
 		$this->viewName_FormROAjax = 'mod_sport_read_ajax';
 		$this->viewName_FormAjax = 'mod_sport_form_ajax';
 
+		/*
+		//ABILITARE PER CUSTOMIZZAZIONE PER MODULO ERRORI SQL 
+		//IN CORSO MIGLIORIA PER GESTIRE I MESSAGGI TRAMITE TABELLA DI TRASCODIFICA
+		//SPOSTARE LOGICA NEL MODEL				
 		$this->MsgDBConverted['insert']['error']['1062'] = "Esiste gia questo elemento per il modulo Sports";
 		$this->MsgDBConverted['insert']['error']['1452'] = "Esiste gia questo elemento per il modulo Sports";
 		$this->MsgDBConverted['update']['error']['1062'] = "Esiste gia questo elemento per il modulo Sports";
@@ -31,11 +35,13 @@ class Mod_sport extends BaseController
 		$this->MsgDBConverted['update_massive']['error']['1452'] = "Esiste gia questo elemento per il modulo Sports";
 		$this->MsgDBConverted['delete']['error']['1217'] = "Impossibile eliminare questo elemento del modulo Sports. E' usato nei seguenti moduli:";
 		$this->MsgDBConverted['delete_massive']['error']['1217'] = "Impossibile eliminare alcuni elementi del modulo Sports. Sono usati nei seguenti moduli:";
+		*/
 
-		//NOTE:NELLA FUNZIONE 'setFormFields' INDICARE NEL VETTORE CHE SI COLLEGA ALLA TABELLA REFERENZIATA
-		//ALLA CHIAVE 'NOME', IL NOMINATIVO DEL CAMPO COLLEGATO
+
 		$this->setFormFields('sport');
 		$this->setFormFields('id');
+ 
+
 	}
 
 
