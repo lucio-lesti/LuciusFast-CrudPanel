@@ -67,19 +67,7 @@ class Mod_affiliazioni_model extends BaseModel
 	* @param string $isAjax
 	* @return string
 	**/
-	public function getList_mod_anagrafica_tessere_assoc($id, $isAjax = 'FALSE'){
-		/*
-		$sql ="SELECT _mod_anagrafica_tessere_assoc.* 
-			,mod_anagrafica.nome AS mod_anagrafica_nome
-			,mod_affiliazioni.nome AS mod_affiliazioni_nome
-					FROM _mod_anagrafica_tessere_assoc
-				 INNER JOIN mod_anagrafica
-							ON _mod_anagrafica_tessere_assoc.fk_anagrafica = mod_anagrafica.id
-				 INNER JOIN mod_affiliazioni
-							ON _mod_anagrafica_tessere_assoc.fk_affiliazione = mod_affiliazioni.id
-			WHERE _mod_anagrafica_tessere_assoc.fk_affiliazione = ".$id;
-		*/
-		
+	public function getList_mod_anagrafica_tessere_assoc($id, $isAjax = 'FALSE'){		
 		$sql ="SELECT mod_anagrafica.nome AS mod_anagrafica_nome,
 			mod_affiliazioni.nome AS mod_affiliazioni_nome,
 			_mod_magazzino_tessere_lista_tessere.codice_tessera as tessera_associativa

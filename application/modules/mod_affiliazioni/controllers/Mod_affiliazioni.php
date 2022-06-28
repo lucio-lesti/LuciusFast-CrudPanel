@@ -21,6 +21,11 @@ class Mod_affiliazioni extends BaseController
 		$this->viewName_FormROAjax = 'mod_affiliazioni_read_ajax';
 		$this->viewName_FormAjax = 'mod_affiliazioni_form_ajax';
 
+		
+		/*
+		//ABILITARE PER CUSTOMIZZAZIONE PER MODULO ERRORI SQL 
+		//IN CORSO MIGLIORIA PER GESTIRE I MESSAGGI TRAMITE TABELLA DI TRASCODIFICA
+		//SPOSTARE LOGICA NEL MODEL
 		$this->MsgDBConverted['insert']['error']['1062'] = "Esiste gia questo elemento per il modulo Affiliazioni";
 		$this->MsgDBConverted['insert']['error']['1452'] = "Esiste gia questo elemento per il modulo Affiliazioni";
 		$this->MsgDBConverted['update']['error']['1062'] = "Esiste gia questo elemento per il modulo Affiliazioni";
@@ -31,24 +36,24 @@ class Mod_affiliazioni extends BaseController
 		$this->MsgDBConverted['update_massive']['error']['1452'] = "Esiste gia questo elemento per il modulo Affiliazioni";
 		$this->MsgDBConverted['delete']['error']['1217'] = "Impossibile eliminare questo elemento del modulo Affiliazioni. E' usato nei seguenti moduli:";
 		$this->MsgDBConverted['delete_massive']['error']['1217'] = "Impossibile eliminare alcuni elementi del modulo Affiliazioni. Sono usati nei seguenti moduli:";
+		*/
 
-		//NOTE:NELLA FUNZIONE 'setFormFields' INDICARE NEL VETTORE CHE SI COLLEGA ALLA TABELLA REFERENZIATA
-		//ALLA CHIAVE 'NOME', IL NOMINATIVO DEL CAMPO COLLEGATO
-		$this->setFormFields('nome');
+
+		/*** INIZIALIZZAZIONE CAMPI FORM***/		
+		$this->setFormFields('nome');		
 		//PER L'ARRAY DI REFERENZIAMENTO, USARE IL CONCAT PER CONCATENARE PIU CAMPI NEL CAMPO 'NOME'
 		//ES.CONCAT(cognome," ",nome)
 		$this->setFormFields('fk_ente','mod_enti',array("id" => 'id', "nome" => 'nome'));
-		//PER L'ARRAY DI REFERENZIAMENTO, USARE IL CONCAT PER CONCATENARE PIU CAMPI NEL CAMPO 'NOME'
-		//ES.CONCAT(cognome," ",nome)
 		$this->setFormFields('fk_esercizio','mod_esercizi',array("id" => 'id', "nome" => 'nome'));
 		$this->setFormFields('id');
 
-		//$this->addMasterDetailsLoadFunc('getMasterDetail_mod_anagrafica_tessere_assoc','Anagrafati Tessere Associative','getMasterDetail_mod_anagrafica_tessere_assoc');
 
 	}
 
+	
 
 	/**
+	 * 
 	* Funzione caricamento della master details, tabella _mod_anagrafica_tessere_assoc
 	* @param mixed $id
 	* @param string $isAjax
@@ -84,20 +89,10 @@ class Mod_affiliazioni extends BaseController
 		$html.='<th>Alunno</th>';
 		$html.='<th>Affiliazione</th>';
 		$html.='<th>Tessera Associativa</th>';
-		if($winFormType == "form"){
-			//$html.='<th>Modifica</th>';
-		}
-		//$html.='<th>Elimina</th>';
 		$html.='</tr>';
 		$html.='<tbody>';
 		foreach($row as $key => $value){
 			$html.="<tr>";
-			/*
-			$html.="<td><input type='checkbox' id='check_id_mod_anagrafica_tessere_assoc' name='check_id_mod_anagrafica_tessere_assoc' value='".$value['id']."' onchange=\"verificaNrCheckBoxSelezionati('check_id_mod_anagrafica_tessere_assoc','btDeleteMass_mod_anagrafica_tessere_assoc')\"></td>";
-			$html.="<td><input type='hidden' id='id[]' name='id[]' value='".$value['id']."'>".$value['mod_anagrafica_nome']."</td>";
-			$html.="<td><input type='hidden' id='id[]' name='id[]' value='".$value['id']."'>".$value['mod_affiliazioni_nome']."</td>";
-			$html.="<td><input type='hidden' id='id[]' name='id[]' value='".$value['id']."'>".$value['tessera_associativa']."</td>";
-			*/
 
 			$html.="<td><input type='checkbox' id='check_id_mod_anagrafica_tessere_assoc' name='check_id_mod_anagrafica_tessere_assoc' value='".$value['id_tesseramento']."' onchange=\"verificaNrCheckBoxSelezionati('check_id_mod_anagrafica_tessere_assoc','btDeleteMass_mod_anagrafica_tessere_assoc')\"></td>";
 			$html.="<td><input type='hidden' id='id[]' name='id[]' value='".$value['id_tesseramento']."'>".$value['mod_anagrafica_nome']."</td>";
@@ -105,19 +100,10 @@ class Mod_affiliazioni extends BaseController
 			$html.="<td><input type='hidden' id='id[]' name='id[]' value='".$value['id_tesseramento']."'>".$value['tessera_associativa']."</td>";
 			
 			
-			if($winFormType == "form"){
-				//$html.="<td><a style='cursor:pointer' class='btn btn-sm btn-info' onclick ='winFormMasterDetails(\"mod_affiliazioni\",\"winMasterDetail_mod_anagrafica_tessere_assoc\",\"edit\", $id,".$value['id'].",\"MODIFICA Anagrafati Tessere Associative\",arrayValidationFields)' title='Modifica Anagrafati Tessere Associative'><i class='fa fa-edit'></a></td>";
-			}
-			//$html.="<td><a style='cursor:pointer' class='btn btn-sm btn-danger deleteUser' onclick ='deleteMasterDetails(".$value['id'].", ".$id.", \"mod_affiliazioni\",\"_mod_anagrafica_tessere_assoc\")' title='Elimina'><i class='fa fa-trash'></a></td>";
 			$html.='</tr>';
 		}
 		$html.='</tbody></table>';
-		/*
-		$html.='<br/><a class="btn btn-sm btn-danger deleteUser" id="btDeleteMass_mod_anagrafica_tessere_assoc" name="btDeleteMass_mod_anagrafica_tessere_assoc""
-					onclick="deleteMassiveMasterDetails('.$id.',\'entry_list\',\'check_id_mod_anagrafica_tessere_assoc\',\'mod_affiliazioni\',\'_mod_anagrafica_tessere_assoc\')">
-					<i class="fa fa-trash"></i> Cancellazione Massiva
-				</a>';
-		*/
+ 
 		return $html;
 	}
 

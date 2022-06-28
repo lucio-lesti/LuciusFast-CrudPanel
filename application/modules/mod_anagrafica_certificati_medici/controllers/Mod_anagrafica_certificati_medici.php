@@ -21,6 +21,11 @@ class Mod_anagrafica_certificati_medici extends BaseController
 		$this->viewName_FormROAjax = 'mod_anagrafica_certificati_medici_read_ajax';
 		$this->viewName_FormAjax = 'mod_anagrafica_certificati_medici_form_ajax';
 
+
+		/*
+		//ABILITARE PER CUSTOMIZZAZIONE PER MODULO ERRORI SQL 
+		//IN CORSO MIGLIORIA PER GESTIRE I MESSAGGI TRAMITE TABELLA DI TRASCODIFICA
+		//SPOSTARE LOGICA NEL MODEL
 		$this->MsgDBConverted['insert']['error']['1062'] = "Esiste gia questo elemento per il modulo Certificati Medici";
 		$this->MsgDBConverted['insert']['error']['1452'] = "Esiste gia questo elemento per il modulo Certificati Medici";
 		$this->MsgDBConverted['update']['error']['1062'] = "Esiste gia questo elemento per il modulo Certificati Medici";
@@ -31,14 +36,14 @@ class Mod_anagrafica_certificati_medici extends BaseController
 		$this->MsgDBConverted['update_massive']['error']['1452'] = "Esiste gia questo elemento per il modulo Certificati Medici";
 		$this->MsgDBConverted['delete']['error']['1217'] = "Impossibile eliminare questo elemento del modulo Certificati Medici. E' usato nei seguenti moduli:";
 		$this->MsgDBConverted['delete_massive']['error']['1217'] = "Impossibile eliminare alcuni elementi del modulo Certificati Medici. Sono usati nei seguenti moduli:";
+		*/
+
 
 		//NOTE:NELLA FUNZIONE 'setFormFields' INDICARE NEL VETTORE CHE SI COLLEGA ALLA TABELLA REFERENZIATA
 		//ALLA CHIAVE 'NOME', IL NOMINATIVO DEL CAMPO COLLEGATO
 		//PER L'ARRAY DI REFERENZIAMENTO, USARE IL CONCAT PER CONCATENARE PIU CAMPI NEL CAMPO 'NOME'
 		//ES.CONCAT(cognome," ",nome)
-		//$this->setFormFields('fk_anagrafica','mod_anagrafica',array("id" => 'id', "nome" => 'nome'));
 		$this->setFormFields('fk_anagrafica','mod_anagrafica',array("id" => 'id', "nome" => 'CONCAT(nome," ",cognome," - ",codfiscale)'));
-
 		$this->setFormFields('tipologia');
 		$this->setFormFields('data_certificato');
 		$this->setFormFields('data_scadenza');
@@ -47,7 +52,9 @@ class Mod_anagrafica_certificati_medici extends BaseController
 		$this->setFormFields('id');
 
 
-		//ABILITARE PER LE OPERAZIONI "CUSTOM"
+		/**  AREA LAMBDA FUNCTIONS - FUNZIONI RICHIAMATE in updateAjax, createAjax e nelle op. di CRUD master details**/
+
+		//VERIFICO DATA CERTIFICATO
 		$this->custom_operations_list['mod_check_date'] = function ($request, $id = NULL) {
 			$ret = $this->utilities->check_date_greater_then($request['data_certificato'], $request['data_scadenza']);
 			if ($ret === FALSE) {
@@ -66,12 +73,6 @@ class Mod_anagrafica_certificati_medici extends BaseController
 	}
 
 
-	public function aggiornaDataUnMese(){
-		$dateIT = $_REQUEST['data_certificato'];
-		$dateEN = $this->utilities->convertToDateEN($dateIT);
-		$monthFromToday = date("Y-m-d", strtotime("+1 year", strtotime($dateEN)));
-		echo json_encode(array("data_scadenza_unmese" => $this->utilities->convertToDateIT($monthFromToday)));		
-	}
 
 	public function _rules()
 	{

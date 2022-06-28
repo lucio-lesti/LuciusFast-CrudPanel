@@ -15,7 +15,35 @@ class Mod_anagrafica_pagamenti_v_model extends BaseModel
 		$this->pkIdName = 'id';
 		$this->mod_name = 'mod_anagrafica_pagamenti_v';
 		$this->mod_type = 'crud';
+
+
+		//NOTE:NELLA FUNZIONE 'setFieldArrayGrid' INDICARE NEL VETTORE CHE SI COLLEGA ALLA TABELLA REFERENZIATA
+		//ALLA CHIAVE 'NOME', IL NOMINATIVO DEL CAMPO COLLEGATO
+
+		//NOTE 2: NELLA FUNZIONE 'setFieldArrayGrid' se nella chiave "nome" si usa una array, la classe "BaseModel" lo interpreta come un concat
+
+		$this->setFieldArrayGrid('id', FIELD_NUMERIC);
+		$this->setFieldArrayGrid('anagrafica_id', FIELD_NUMERIC);
+		$this->setFieldArrayGrid('anagrafica', FIELD_STRING);
+		$this->setFieldArrayGrid('affiliazione_id', FIELD_STRING);
+		$this->setFieldArrayGrid('affiliazione', FIELD_STRING);
+		$this->setFieldArrayGrid('esercizio_id', FIELD_NUMERIC);
+		$this->setFieldArrayGrid('esercizio', FIELD_STRING);
+		$this->setFieldArrayGrid('saldo', FIELD_STRING);
+		$this->setFieldArrayGrid('datapagamento', FIELD_DATE);
+		$this->setFieldArrayGrid('mese', FIELD_STRING);
+		$this->setFieldArrayGrid('anno', FIELD_STRING);
+		$this->setFieldArrayGrid('importo', FIELD_FLOAT);
+	 
+
+		//ESEMPIO DI TABELLA REFERENZIATA CHE NON HA IL CAMPO 'NOME'. QUI INDICHIAMO AL PROGRAMMA QUALE E' IL CAMPO DA USARE COME CAMPO 'NOME'
+		//P.S.QUESTA OPERAZIONE E' POSSIBILE FARLA ANCHE NEL METODO 'setFieldArrayGrid'
+		//$this->arrayColumnsReferenced['mod_sport']['nome'] = "sport"; 
+
 	}
+
+
+
 
 
     /**
@@ -37,17 +65,24 @@ class Mod_anagrafica_pagamenti_v_model extends BaseModel
 				break;
 			}
 		}
+		//print'<pre>';print_r($global_permissions);die();
 
 
 		$this->datatables->select("id AS id,
 								esercizio_id,
 								affiliazione_id,
+								tessera_interna as mod_anagrafica_pagamenti_v_codtessera_int,
 								anagrafica AS mod_anagrafica_pagamenti_v_anagrafica,
 								esercizio AS mod_anagrafica_pagamenti_v_esercizio,
 								affiliazione AS mod_anagrafica_pagamenti_v_affiliazione");
 		$this->datatables->from("mod_anagrafica_pagamenti_v");	 
 
 		$button = "";   
+		/*
+		if($perm_read == 'Y'){
+			$button .= "<a onclick='readAjax(\"$this->mod_name\",\"$1\")' class='btn btn-sm btn-default' title='Visualizza'><i class='fa fa-eye'></i></a><br>";
+		}
+		*/
 		if($perm_update == 'Y'){
 			$button .= "<a onclick='editAjax(\"$this->mod_name\",\"$1\")' class='btn btn-sm btn-info' title='Modifica'><i class='fa fa-pencil'></i></a><br>";
 		}  
@@ -69,7 +104,8 @@ class Mod_anagrafica_pagamenti_v_model extends BaseModel
 		if(($esercId != "")){
 			$sql .=" WHERE mod_affiliazioni.fk_esercizio = ".$esercId;	
 		}	
-			
+		
+		//echo $sql;die();		
 		$row =  $this->db->query($sql)->result_array();	
 
 		return $row;
@@ -125,7 +161,9 @@ class Mod_anagrafica_pagamenti_v_model extends BaseModel
 				INNER JOIN _mod_anagrafica_corsi
 					ON  _mod_anagrafica_corsi.fk_corso = mod_corsi.id
 					AND _mod_anagrafica_corsi.fk_anagrafica = $idAnagrafica";
-
+ 
+		//echo $sql;
+		//die();		
 		return $this->db->query($sql)->result_array();		
 	}
 
@@ -174,6 +212,7 @@ class Mod_anagrafica_pagamenti_v_model extends BaseModel
 				ON mod_causali_pagamento.id = _mod_pagamenti_ricevuti.fk_causale_pagamento						
 			WHERE 1=1
 			AND mod_tipopagamento.nome <> 'TESSERAMENTO'
+			/*AND (_mod_pagamenti_ricevuti.saldo = 'SI' or _mod_pagamenti_ricevuti.saldo = 'NO' or _mod_pagamenti_ricevuti.saldo = 'NON PAGHERA')*/
 			
 			ORDER BY mese_anno ASC";
 		return $this->db->query($sql)->result_array();	

@@ -21,6 +21,11 @@ class Mod_anagrafica_green_pass_autocertificazione extends BaseController
 		$this->viewName_FormROAjax = 'mod_anagrafica_green_pass_autocertificazione_read_ajax';
 		$this->viewName_FormAjax = 'mod_anagrafica_green_pass_autocertificazione_form_ajax';
 
+
+		/*
+		//ABILITARE PER CUSTOMIZZAZIONE PER MODULO ERRORI SQL 
+		//IN CORSO MIGLIORIA PER GESTIRE I MESSAGGI TRAMITE TABELLA DI TRASCODIFICA
+		//SPOSTARE LOGICA NEL MODEL		
 		$this->MsgDBConverted['insert']['error']['1062'] = "Esiste gia questo elemento per il modulo Autocertificazioni Green Pass";
 		$this->MsgDBConverted['insert']['error']['1452'] = "Esiste gia questo elemento per il modulo Autocertificazioni Green Pass";
 		$this->MsgDBConverted['update']['error']['1062'] = "Esiste gia questo elemento per il modulo Autocertificazioni Green Pass";
@@ -31,6 +36,8 @@ class Mod_anagrafica_green_pass_autocertificazione extends BaseController
 		$this->MsgDBConverted['update_massive']['error']['1452'] = "Esiste gia questo elemento per il modulo Autocertificazioni Green Pass";
 		$this->MsgDBConverted['delete']['error']['1217'] = "Impossibile eliminare questo elemento del modulo Autocertificazioni Green Pass. E' usato nei seguenti moduli:";
 		$this->MsgDBConverted['delete_massive']['error']['1217'] = "Impossibile eliminare alcuni elementi del modulo Autocertificazioni Green Pass. Sono usati nei seguenti moduli:";
+		*/
+
 
 		//NOTE:NELLA FUNZIONE 'setFormFields' INDICARE NEL VETTORE CHE SI COLLEGA ALLA TABELLA REFERENZIATA
 		//ALLA CHIAVE 'NOME', IL NOMINATIVO DEL CAMPO COLLEGATO
@@ -43,12 +50,15 @@ class Mod_anagrafica_green_pass_autocertificazione extends BaseController
 		$this->setFormFields('id');
 
 
-		//ABILITARE PER LE OPERAZIONI "CUSTOM"
+
+		
+		/**  AREA LAMBDA FUNCTIONS - FUNZIONI RICHIAMATE in updateAjax, createAjax e nelle op. di CRUD master details**/
 
 		//PRELEVO IL NOME DEL DOCUMENTO CARICATO
 		$this->custom_operations_list['get_nome_documento'] = function ($request, $id = NULL) {
 			$_POST['nome_documento'] = $_FILES['documento_upload']['name'];
 		};
+
 
 	}
 
