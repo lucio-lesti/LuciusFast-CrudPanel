@@ -20,6 +20,10 @@ class Mod_tipo_spesa_generica extends BaseController
 		$this->viewName_FormROAjax = 'mod_tipo_spesa_generica_read_ajax';
 		$this->viewName_FormAjax = 'mod_tipo_spesa_generica_form_ajax';
 
+		/*
+		//ABILITARE PER CUSTOMIZZAZIONE PER MODULO ERRORI SQL 
+		//IN CORSO MIGLIORIA PER GESTIRE I MESSAGGI TRAMITE TABELLA DI TRASCODIFICA
+		//SPOSTARE LOGICA NEL MODEL				
 		$this->MsgDBConverted['insert']['error']['1062'] = "Esiste gia questo elemento per il modulo Tipo Spesa";
 		$this->MsgDBConverted['insert']['error']['1452'] = "Esiste gia questo elemento per il modulo Tipo Spesa";
 		$this->MsgDBConverted['update']['error']['1062'] = "Esiste gia questo elemento per il modulo Tipo Spesa";
@@ -30,7 +34,9 @@ class Mod_tipo_spesa_generica extends BaseController
 		$this->MsgDBConverted['update_massive']['error']['1452'] = "Esiste gia questo elemento per il modulo Tipo Spesa";
 		$this->MsgDBConverted['delete']['error']['1217'] = "Impossibile eliminare questo elemento del modulo Tipo Spesa. E' usato nei seguenti moduli:";
 		$this->MsgDBConverted['delete_massive']['error']['1217'] = "Impossibile eliminare alcuni elementi del modulo Tipo Spesa. Sono usati nei seguenti moduli:";
+		*/
 
+		
 		//NOTE:NELLA FUNZIONE 'setFormFields' INDICARE NEL VETTORE CHE SI COLLEGA ALLA TABELLA REFERENZIATA
 		//ALLA CHIAVE 'NOME', IL NOMINATIVO DEL CAMPO COLLEGATO
 		$this->setFormFields('nome');
